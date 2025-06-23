@@ -6,7 +6,15 @@
       "Bash(npx create-next-app:*)",
       "Bash(npx shadcn:*)",
       "Bash(npm init:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(timeout 10s npm run dev)",
+      "Bash(true)",
+      "Bash(timeout 5s npm run dev)",
+      "Bash(npm run init:*)",
+      "Bash(cp:*)",
+      "Bash(timeout 30s npm run start)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

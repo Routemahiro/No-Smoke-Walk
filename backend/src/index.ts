@@ -1,9 +1,6 @@
-export interface Env {
-  SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
-  CACHE?: KVNamespace;
-  ABUSE_GUARD?: string;
-}
+import { handleReportSubmission } from './handlers/reports';
+import { handleHeatmapRequest, handleHeatmapStats } from './handlers/heatmap';
+import { Env } from './types';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -23,7 +20,11 @@ export default {
 
     // Basic routing
     if (url.pathname === '/api/health') {
-      return new Response(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }), {
+      return new Response(JSON.stringify({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        environment: env.ENVIRONMENT || 'development'
+      }), {
         headers: { 
           'Content-Type': 'application/json',
           ...corsHeaders 
@@ -32,23 +33,15 @@ export default {
     }
 
     if (url.pathname === '/api/reports' && request.method === 'POST') {
-      // TODO: Implement report submission
-      return new Response(JSON.stringify({ message: 'Reports API - Coming Soon' }), {
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders 
-        },
-      });
+      return handleReportSubmission(request, env);
     }
 
     if (url.pathname === '/api/heatmap' && request.method === 'GET') {
-      // TODO: Implement heatmap data
-      return new Response(JSON.stringify({ message: 'Heatmap API - Coming Soon' }), {
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders 
-        },
-      });
+      return handleHeatmapRequest(request, env);
+    }
+
+    if (url.pathname === '/api/heatmap/stats' && request.method === 'GET') {
+      return handleHeatmapStats(request, env);
     }
 
     // 404 for other routes
