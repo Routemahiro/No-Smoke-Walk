@@ -1,5 +1,6 @@
 import { handleReportSubmission } from './handlers/reports';
 import { handleHeatmapRequest, handleHeatmapStats } from './handlers/heatmap';
+import { handleExportCSV, handleExportExcel } from './handlers/export';
 import { Env } from './types';
 
 export default {
@@ -42,6 +43,14 @@ export default {
 
     if (url.pathname === '/api/heatmap/stats' && request.method === 'GET') {
       return handleHeatmapStats(request, env);
+    }
+
+    if (url.pathname === '/api/admin/export/csv' && request.method === 'GET') {
+      return handleExportCSV(request, env);
+    }
+
+    if (url.pathname === '/api/admin/export/excel' && request.method === 'GET') {
+      return handleExportExcel(request, env);
     }
 
     // 404 for other routes

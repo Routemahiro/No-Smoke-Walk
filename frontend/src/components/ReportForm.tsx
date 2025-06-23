@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useRateLimit } from '@/hooks/useRateLimit';
 import { apiClient } from '@/lib/supabase';
 import { ReportCategory } from '@/types';
 
@@ -30,21 +31,20 @@ const CATEGORY_CONFIG = {
   },
 } as const;
 
-const COOLDOWN_SECONDS = 10;
-
 export function ReportForm() {
   const { location, error: locationError, loading: locationLoading, getCurrentLocation } = useGeolocation();
+  const { isBlocked, remainingTime, submissionCount, maxSubmissions, recordSubmission } = useRateLimit();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   const handleSubmit = async () => {
     if (!location || !selectedCategory) return;
 
-    if (cooldownRemaining > 0) {
-      setSubmitError(`連続投稿防止のため、あと${cooldownRemaining}秒お待ちください`);
+    // Check rate limit before attempting submission
+    if (isBlocked) {
+      setSubmitError(`たくさんのご報告をありがとうございます！システム保護のため、あと${remainingTime}秒お待ちください`);
       return;
     }
 
@@ -52,6 +52,13 @@ export function ReportForm() {
     setSubmitError(null);
 
     try {
+      // Record the submission attempt for rate limiting
+      const canSubmit = recordSubmission();
+      if (!canSubmit) {
+        setSubmitError('積極的なご協力に感謝いたします！少しお時間をおいてからお試しください。');
+        return;
+      }
+
       await apiClient.submitReport({
         lat: location.lat,
         lon: location.lon,
@@ -60,18 +67,6 @@ export function ReportForm() {
 
       setSubmitSuccess(true);
       setSelectedCategory(null);
-      
-      // Start cooldown
-      setCooldownRemaining(COOLDOWN_SECONDS);
-      const cooldownInterval = setInterval(() => {
-        setCooldownRemaining(prev => {
-          if (prev <= 1) {
-            clearInterval(cooldownInterval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
 
       // Clear success message after 3 seconds
       setTimeout(() => setSubmitSuccess(false), 3000);
@@ -190,14 +185,14 @@ export function ReportForm() {
           
           <Button
             onClick={handleSubmit}
-            disabled={!location || !selectedCategory || submitting || cooldownRemaining > 0}
+            disabled={!location || !selectedCategory || submitting || isBlocked}
             className="w-full"
             size="lg"
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : cooldownRemaining > 0 ? (
-              `報告送信 (${cooldownRemaining}s)`
+            ) : isBlocked ? (
+              `ご協力感謝 (${remainingTime}s)`
             ) : (
               '報告を送信'
             )}
@@ -216,12 +211,27 @@ export function ReportForm() {
           )}
         </div>
 
+        {/* Rate Limit Status */}
+        {submissionCount > 0 && (
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <h5 className="text-xs font-medium mb-1">投稿状況</h5>
+            <div className="text-xs text-blue-600">
+              10分間の投稿数: {submissionCount}/{maxSubmissions}
+              {isBlocked && (
+                <span className="block mt-1 text-orange-600">
+                  ご協力ありがとうございます！あと{remainingTime}秒でリセット
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Usage Instructions */}
         <div className="bg-muted/50 p-3 rounded-lg">
           <h5 className="text-xs font-medium mb-1">ご利用について</h5>
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• 正確な情報の報告にご協力ください</li>
-            <li>• 連続投稿防止のため、{COOLDOWN_SECONDS}秒間隔を設けています</li>
+            <li>• 連続投稿防止のため、10分間に{maxSubmissions}件まで投稿可能です</li>
             <li>• 報告された情報は行政指導の資料として活用されます</li>
           </ul>
         </div>

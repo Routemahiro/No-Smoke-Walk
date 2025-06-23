@@ -1,4 +1,6 @@
 import { ReportForm } from '@/components/ReportForm';
+import Link from 'next/link';
+import { Map, Shield } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -14,8 +16,17 @@ export default function Home() {
                 大阪市の歩きタバコ・ポイ捨て報告システム
               </p>
             </div>
-            <div className="text-sm text-gray-500">
-              v1.1.0
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/admin"
+                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Shield className="h-4 w-4" />
+                管理者
+              </Link>
+              <div className="text-sm text-gray-500">
+                v1.1.0
+              </div>
             </div>
           </div>
         </div>
@@ -24,8 +35,30 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Report Form */}
-          <div>
+          <div className="space-y-4">
             <ReportForm />
+            
+            {/* Heatmap Link */}
+            <Link 
+              href="/heatmap"
+              className="block w-full max-w-md mx-auto"
+            >
+              <div className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <Map className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">
+                      ヒートマップを見る
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      報告データの分布状況を地図上で確認
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* Information Panel */}
