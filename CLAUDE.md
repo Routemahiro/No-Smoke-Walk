@@ -269,5 +269,18 @@ npm run lint
 **2025-06-23 不正対策機能（アンチスパム）実装完了**
 - 2025-06-23 frontend/src/lib/fingerprint.ts ブラウザフィンガープリント生成ライブラリ実装（プライバシー配慮の軽量版対応）
 - 2025-06-23 frontend/src/hooks/useRateLimit.ts レート制限カスタムフック実装（10分間5件制限・フィンガープリント連携）
-- 2025-06-23 frontend/src/components/ReportForm.tsx レート制限機能統合（投稿状況表示・制限中カウントダウン）
+- 2025-06-23 frontend/src/components/ReportForm.tsx レート制限機能統合（投稿状況表示・制限中カウントダウン・感謝メッセージ）
 - 2025-06-23 frontend/ アンチスパム機能 TypeScript型チェック完了
+
+**2025-06-23 CI/CDパイプライン実装完了**
+- 2025-06-23 .github/workflows/deploy.yml GitHub Actions ワークフロー実装（ビルド・テスト・デプロイ自動化）
+- 2025-06-23 frontend/next.config.ts 静的エクスポート設定（Cloudflare Pages対応）
+- 2025-06-23 frontend/_headers セキュリティヘッダー・キャッシュ設定
+- 2025-06-23 backend/wrangler.toml 本番環境設定（環境分離・Node.js互換性）
+- 2025-06-23 docs/DEPLOYMENT.md デプロイメント手順書作成（Cloudflare設定・環境変数・トラブルシューティング）
+- 2025-06-23 README.md プロジェクト概要・技術スタック・セットアップ手順書作成
+
+**2025-06-23 UI/UX改善（ミニヒートマップ統合）**
+- 2025-06-23 frontend/src/components/MiniHeatmap.tsx ミニヒートマップコンポーネント実装（周辺状況確認・詳細マップリンク）
+- 2025-06-23 frontend/src/components/ReportForm.tsx レイアウト改善（ヒートマップ最上部配置・位置情報説明改善・使用案内更新）
+- 2025-06-23 frontend/ UI/UX改善 TypeScript型チェック完了

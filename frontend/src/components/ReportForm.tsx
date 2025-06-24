@@ -9,6 +9,7 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { apiClient } from '@/lib/supabase';
 import { ReportCategory } from '@/types';
+import { MiniHeatmap } from '@/components/MiniHeatmap';
 
 const CATEGORY_CONFIG = {
   walk_smoke: {
@@ -96,9 +97,12 @@ export function ReportForm() {
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Mini Heatmap */}
+        <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
+
         {/* Location Status */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">📍 位置情報</h4>
+          <h4 className="text-sm font-medium">📍 位置情報の確認</h4>
           
           {locationLoading && (
             <Alert>
@@ -136,7 +140,7 @@ export function ReportForm() {
             ) : (
               <MapPin className="h-4 w-4 mr-2" />
             )}
-            位置情報を再取得
+            {location ? '位置情報を更新' : '位置情報を取得'}
           </Button>
         </div>
 
@@ -230,6 +234,7 @@ export function ReportForm() {
         <div className="bg-muted/50 p-3 rounded-lg">
           <h5 className="text-xs font-medium mb-1">ご利用について</h5>
           <ul className="text-xs text-muted-foreground space-y-1">
+            <li>• まずは上のマップで周辺の状況をご確認ください</li>
             <li>• 正確な情報の報告にご協力ください</li>
             <li>• 連続投稿防止のため、10分間に{maxSubmissions}件まで投稿可能です</li>
             <li>• 報告された情報は行政指導の資料として活用されます</li>
