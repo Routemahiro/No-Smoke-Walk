@@ -284,3 +284,42 @@ npm run lint
 - 2025-06-23 frontend/src/components/MiniHeatmap.tsx ミニヒートマップコンポーネント実装（周辺状況確認・詳細マップリンク）
 - 2025-06-23 frontend/src/components/ReportForm.tsx レイアウト改善（ヒートマップ最上部配置・位置情報説明改善・使用案内更新）
 - 2025-06-23 frontend/ UI/UX改善 TypeScript型チェック完了
+
+**2025-06-24 MiniHeatmap統合完了**
+- 2025-06-24 frontend/src/components/ReportForm.tsx MiniHeatmapコンポーネントのコメントアウト解除（12行目・101行目）
+- 2025-06-24 frontend/ 開発サーバー起動テスト完了（port 3003）
+- 2025-06-24 frontend/src/components/MiniHeatmap.tsx MapLibre GL動的インポート正常動作確認
+- 2025-06-24 frontend/ TypeScript型チェック完了（全エラー解消）
+
+## 現在の課題と対応状況
+
+### 開発サーバー起動問題
+**問題**: 別プロジェクト（our_housework20250324）のNext.js設定が混在してmiddleware-manifest.jsonエラー
+
+**現在の状況**:
+- MiniHeatmapコンポーネントは実装済み（MapLibre GLの動的インポート対応済み）
+- 一時的にReportForm.tsx内でMiniHeatmapをコメントアウト中（12行目・101行目）
+- 開発サーバーはport 3003で起動予定（npx next dev --port 3003）
+
+**解決済み** (2025-06-24):
+1. ✅ 開発サーバー起動テスト完了（port 3003で正常動作）
+2. ✅ MiniHeatmapのコメントアウト解除完了
+3. ✅ MapLibre GLの動的インポート正常動作確認
+4. ✅ TypeScript型チェック完了（エラーなし）
+
+### MiniHeatmapコンポーネント詳細
+- 場所: `frontend/src/components/MiniHeatmap.tsx`
+- 機能: 周辺報告状況の表示、詳細マップへのリンク、ユーザー位置表示
+- 技術: MapLibre GLの動的インポート、useHeatmapフック活用
+- レイアウト: ReportFormの最上部に配置予定
+
+### 想定される新しいUI構成
+```
+📍 ミニヒートマップ（32px高さ、周辺状況表示）
+   └── 「詳細マップ」ボタン
+📍 位置情報の確認
+   └── 「位置情報を取得/更新」ボタン  
+🚭 報告内容（3つのカテゴリボタン）
+📊 投稿状況表示
+📝 利用案内
+```

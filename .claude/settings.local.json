@@ -14,7 +14,15 @@
       "Bash(npm run init:*)",
       "Bash(cp:*)",
       "Bash(timeout 30s npm run start)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)",
+      "Bash(PORT=3002 npm run dev)",
+      "Bash(curl:*)",
+      "Bash(unset NEXT_CONFIG_PATH)",
+      "Bash(unset NODE_PATH)",
+      "Bash(npx next dev:*)"
     ],
     "deny": []
   }
