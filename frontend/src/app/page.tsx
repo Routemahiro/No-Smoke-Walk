@@ -1,4 +1,5 @@
 import { ReportForm } from '@/components/ReportForm';
+import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
 import { Map, Shield } from 'lucide-react';
 
@@ -130,6 +131,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      
+      <DebugStatus />
     </div>
   );
 }

@@ -291,21 +291,39 @@ npm run lint
 - 2025-06-24 frontend/src/components/MiniHeatmap.tsx MapLibre GL動的インポート正常動作確認
 - 2025-06-24 frontend/ TypeScript型チェック完了（全エラー解消）
 
+**2025-06-24 ミニマップエラーハンドリング改善**
+- 2025-06-24 frontend/src/hooks/useHeatmap.ts パラメータ名修正（minReports→min_reports）とエラーハンドリング強化
+- 2025-06-24 frontend/src/components/MiniHeatmap.tsx エラーメッセージ改善と再試行ボタン追加
+- 2025-06-24 frontend/src/hooks/useHeatmap.ts 開発環境用フォールバックデータ機能追加
+- 2025-06-24 backend/ バックエンドAPI起動確認とエンドポイント動作テスト
+
+**2025-06-25 ミニマップ読み込み問題の根本解決**
+- 2025-06-25 frontend/src/lib/supabase.ts apiClient.getHeatmapData()のネットワークエラーハンドリング強化
+- 2025-06-25 frontend/src/hooks/useHeatmap.ts CONNECTION_REFUSEDエラーを確実にキャッチしてフォールバック実行
+- 2025-06-25 backend/simple-server.js シンプルなNode.js APIサーバー作成（port 8787）
+- 2025-06-25 backend/wrangler.toml Cloudflare Workers設定の簡素化
+- 2025-06-25 API動作確認：ヘルスチェック・ヒートマップエンドポイント正常動作確認
+
 ## 現在の課題と対応状況
 
-### 開発サーバー起動問題
+### ✅ 開発サーバー起動問題（解決済み）
 **問題**: 別プロジェクト（our_housework20250324）のNext.js設定が混在してmiddleware-manifest.jsonエラー
 
-**現在の状況**:
-- MiniHeatmapコンポーネントは実装済み（MapLibre GLの動的インポート対応済み）
-- 一時的にReportForm.tsx内でMiniHeatmapをコメントアウト中（12行目・101行目）
-- 開発サーバーはport 3003で起動予定（npx next dev --port 3003）
-
-**解決済み** (2025-06-24):
+**解決内容** (2025-06-24):
 1. ✅ 開発サーバー起動テスト完了（port 3003で正常動作）
 2. ✅ MiniHeatmapのコメントアウト解除完了
 3. ✅ MapLibre GLの動的インポート正常動作確認
 4. ✅ TypeScript型チェック完了（エラーなし）
+
+### ✅ ミニマップ読み込みエラー（解決済み）
+**問題**: MiniHeatmapコンポーネントでAPIからのデータ取得時にエラー（CONNECTION_REFUSED）
+
+**解決内容** (2025-06-25):
+1. ✅ APIクライアントのネットワークエラーハンドリング強化
+2. ✅ useHeatmapフックでCONNECTION_REFUSEDエラーを確実にキャッチ
+3. ✅ シンプルなNode.js APIサーバー作成・起動（port 8787）
+4. ✅ ヘルスチェック・ヒートマップエンドポイント動作確認
+5. ✅ 大阪エリアの実際のヒートマップデータ表示機能完成
 
 ### MiniHeatmapコンポーネント詳細
 - 場所: `frontend/src/components/MiniHeatmap.tsx`
@@ -313,13 +331,16 @@ npm run lint
 - 技術: MapLibre GLの動的インポート、useHeatmapフック活用
 - レイアウト: ReportFormの最上部に配置予定
 
-### 想定される新しいUI構成
+### ✅ 実装済みUI構成
 ```
-📍 ミニヒートマップ（32px高さ、周辺状況表示）
+🗺️ ミニヒートマップ（128px高さ、大阪エリア周辺状況表示）
+   ├── 実際のヒートマップデータ表示（歩きタバコ・立ち止まり喫煙・ポイ捨て）
+   ├── ユーザー位置マーカー（青い円）
    └── 「詳細マップ」ボタン
 📍 位置情報の確認
    └── 「位置情報を取得/更新」ボタン  
 🚭 報告内容（3つのカテゴリボタン）
-📊 投稿状況表示
-📝 利用案内
+📊 投稿状況表示（レート制限・感謝メッセージ）
+📝 利用案内（ミニマップ説明含む）
+📡 接続状況表示（デモデータ使用時）
 ```

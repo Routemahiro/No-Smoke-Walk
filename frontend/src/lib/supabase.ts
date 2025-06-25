@@ -43,14 +43,20 @@ export const apiClient = {
     
     const url = `${this.baseUrl}/api/heatmap${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
     
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch heatmap data');
+    try {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Network error' }));
+        throw new Error(error.error || 'Failed to fetch heatmap data');
+      }
+      
+      return response.json();
+    } catch (fetchError) {
+      // Specifically handle connection refused and network errors
+      console.error('API fetch failed:', fetchError);
+      throw new Error('CONNECTION_REFUSED');
     }
-    
-    return response.json();
   },
   
   async getHeatmapStats() {

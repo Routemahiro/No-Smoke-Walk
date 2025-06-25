@@ -22,7 +22,8 @@
       "Bash(curl:*)",
       "Bash(unset NEXT_CONFIG_PATH)",
       "Bash(unset NODE_PATH)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(timeout 20s npm run dev)"
     ],
     "deny": []
   }

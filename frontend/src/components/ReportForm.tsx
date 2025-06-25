@@ -33,7 +33,7 @@ const CATEGORY_CONFIG = {
 } as const;
 
 export function ReportForm() {
-  const { location, error: locationError, loading: locationLoading, getCurrentLocation } = useGeolocation();
+  const { location, error: locationError, loading: locationLoading, getCurrentLocation, address, addressLoading } = useGeolocation();
   const { isBlocked, remainingTime, submissionCount, maxSubmissions, recordSubmission } = useRateLimit();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -122,8 +122,22 @@ export function ReportForm() {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                位置情報を取得しました
-                {location.accuracy && ` (精度: 約${Math.round(location.accuracy)}m)`}
+                <div className="space-y-1">
+                  <div>
+                    位置情報を取得しました
+                    {location.accuracy && ` (精度: 約${Math.round(location.accuracy)}m)`}
+                  </div>
+                  {addressLoading ? (
+                    <div className="flex items-center gap-1 text-xs text-gray-600">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      住所を取得中...
+                    </div>
+                  ) : address ? (
+                    <div className="text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded">
+                      📍 {address}
+                    </div>
+                  ) : null}
+                </div>
               </AlertDescription>
             </Alert>
           )}

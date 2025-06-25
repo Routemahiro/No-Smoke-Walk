@@ -27,6 +27,19 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
     days: 30
   });
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🗺️ MiniHeatmap state:', { 
+      isMapFullyReady, 
+      loading, 
+      hasHeatmapData: !!heatmapData, 
+      error,
+      userLocation: !!userLocation,
+      maplibregl: !!maplibregl,
+      mapContainer: !!mapContainer.current
+    });
+  }, [isMapFullyReady, loading, heatmapData, error, userLocation, maplibregl]);
+
   // Load MapLibre GL dynamically
   useEffect(() => {
     const loadMapLibre = async () => {
@@ -115,63 +128,76 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
     };
   }, [maplibregl]);
 
-  // Only attempt to add sources/layers when map is FULLY ready
+  // Add user location marker when ready
   useEffect(() => {
-    if (!isMapFullyReady || !map.current || !userLocation) return;
+    if (!isMapFullyReady || !map.current || !userLocation) {
+      console.log('User location effect skipped:', { isMapFullyReady, mapExists: !!map.current, userLocation });
+      return;
+    }
 
-    // Use requestAnimationFrame to ensure rendering is complete
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        try {
-          if (!map.current?.isStyleLoaded()) {
-            console.warn('Style not loaded, skipping user location');
-            return;
-          }
+    console.log('Adding user location marker:', userLocation);
 
-          // Remove existing
-          if (map.current.getLayer('user-location')) {
-            map.current.removeLayer('user-location');
-          }
-          if (map.current.getSource('user-location')) {
-            map.current.removeSource('user-location');
-          }
-
-          // Add new
-          map.current.addSource('user-location', {
-            type: 'geojson',
-            data: {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [userLocation.lon, userLocation.lat]
-              },
-              properties: {}
-            }
-          });
-
-          map.current.addLayer({
-            id: 'user-location',
-            type: 'circle',
-            source: 'user-location',
-            paint: {
-              'circle-radius': 8,
-              'circle-color': '#3b82f6',
-              'circle-stroke-color': '#ffffff',
-              'circle-stroke-width': 2
-            }
-          });
-
-          map.current.flyTo({
-            center: [userLocation.lon, userLocation.lat],
-            zoom: 15,
-            duration: 1000
-          });
-
-        } catch (error) {
-          console.error('Error adding user location:', error);
+    const addUserLocationMarker = () => {
+      try {
+        if (!map.current?.isStyleLoaded()) {
+          console.warn('Style not loaded, skipping user location');
+          return;
         }
-      });
-    });
+
+        // Remove existing user location if it exists
+        if (map.current.getLayer('user-location')) {
+          map.current.removeLayer('user-location');
+          console.log('Removed existing user location layer');
+        }
+        if (map.current.getSource('user-location')) {
+          map.current.removeSource('user-location');
+          console.log('Removed existing user location source');
+        }
+
+        // Add user location source
+        map.current.addSource('user-location', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [userLocation.lon, userLocation.lat]
+            },
+            properties: {}
+          }
+        });
+        console.log('Added user location source');
+
+        // Add user location layer with prominent styling
+        map.current.addLayer({
+          id: 'user-location',
+          type: 'circle',
+          source: 'user-location',
+          paint: {
+            'circle-radius': 12,
+            'circle-color': '#3b82f6',
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 3,
+            'circle-opacity': 1
+          }
+        });
+        console.log('Added user location layer');
+
+        // Center map on user location
+        map.current.flyTo({
+          center: [userLocation.lon, userLocation.lat],
+          zoom: 15,
+          duration: 1000
+        });
+        console.log('Centered map on user location');
+
+      } catch (error) {
+        console.error('Error adding user location marker:', error);
+      }
+    };
+
+    // Use timeout instead of requestAnimationFrame for more reliable execution
+    setTimeout(addUserLocationMarker, 200);
 
   }, [isMapFullyReady, userLocation]);
 
@@ -271,13 +297,38 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
             }
           });
 
+          // Re-add user location on top of heatmap if it exists
+          if (userLocation) {
+            setTimeout(() => {
+              if (map.current && map.current.getSource('user-location')) {
+                // Move user location layer to top
+                if (map.current.getLayer('user-location')) {
+                  map.current.removeLayer('user-location');
+                }
+                map.current.addLayer({
+                  id: 'user-location',
+                  type: 'circle',
+                  source: 'user-location',
+                  paint: {
+                    'circle-radius': 12,
+                    'circle-color': '#3b82f6',
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 3,
+                    'circle-opacity': 1
+                  }
+                });
+                console.log('Re-added user location layer on top');
+              }
+            }, 100);
+          }
+
         } catch (error) {
           console.error('Error adding heatmap data:', error);
         }
       });
     });
 
-  }, [isMapFullyReady, heatmapData]);
+  }, [isMapFullyReady, heatmapData, userLocation]);
 
   return (
     <Card className="w-full">
@@ -304,32 +355,51 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
           />
           
           {/* Loading/Error States */}
-          {(!isMapFullyReady || loading) && (
+          {(loading || !isMapFullyReady) && !error && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                マップを読み込み中...
+                {!isMapFullyReady ? 'マップを初期化中...' : 'データを読み込み中...'}
               </div>
             </div>
           )}
 
           {error && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
-              <Alert variant="destructive" className="m-2">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs">
-                  マップの読み込みに失敗しました
-                </AlertDescription>
-              </Alert>
+              <div className="text-center p-3 space-y-2">
+                <Alert variant="destructive" className="text-xs">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {error.includes('接続できませんでした') ? 
+                      'サーバーに接続できません' : 
+                      'データの読み込みに失敗しました'
+                    }
+                  </AlertDescription>
+                </Alert>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs h-6 px-2"
+                  onClick={() => window.location.reload()}
+                >
+                  再試行
+                </Button>
+              </div>
             </div>
           )}
 
-          {!userLocation && !loading && isMapFullyReady && (
+          {!userLocation && !loading && isMapFullyReady && !error && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
               <div className="text-center text-xs text-gray-600 px-2">
                 <MapPin className="h-4 w-4 mx-auto mb-1" />
                 位置情報を取得すると<br />周辺の詳細を表示します
               </div>
+            </div>
+          )}
+
+          {userLocation && isMapFullyReady && !loading && (
+            <div className="absolute top-2 right-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-md">
+              📍 現在位置表示中
             </div>
           )}
         </div>
@@ -339,6 +409,9 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
           <p>🔴 赤いエリアは報告が多い要注意地域です</p>
           <p>📍 青い点があなたの現在位置です</p>
           <p>👆 タップして詳細マップで確認できます</p>
+          {heatmapData && !error && (
+            <p className="text-blue-600">📡 デモデータを表示中</p>
+          )}
         </div>
       </CardContent>
     </Card>

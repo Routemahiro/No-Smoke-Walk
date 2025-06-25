@@ -5,8 +5,9 @@ import maplibregl from 'maplibre-gl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RefreshCw, Filter, AlertCircle, Map, BarChart } from 'lucide-react';
+import { RefreshCw, Filter, AlertCircle, Map, BarChart, MapPin } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { ReportCategory } from '@/types';
 
 const OSAKA_CENTER: [number, number] = [135.5023, 34.6937]; // [lng, lat]
@@ -32,6 +33,7 @@ export function HeatmapView() {
   });
 
   const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(filters);
+  const { location: userLocation, getCurrentLocation } = useGeolocation();
 
   // Initialize map
   useEffect(() => {
@@ -212,6 +214,58 @@ export function HeatmapView() {
 
   }, [mapLoaded, heatmapData]);
 
+  // Add user location marker
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !userLocation) {
+      console.log('User location marker skipped:', { mapLoaded, userLocation: !!userLocation });
+      return;
+    }
+
+    console.log('Adding user location to HeatmapView:', userLocation);
+
+    try {
+      // Remove existing user location if it exists
+      if (map.current.getLayer('user-location')) {
+        map.current.removeLayer('user-location');
+      }
+      if (map.current.getSource('user-location')) {
+        map.current.removeSource('user-location');
+      }
+
+      // Add user location source
+      map.current.addSource('user-location', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [userLocation.lon, userLocation.lat]
+          },
+          properties: {}
+        }
+      });
+
+      // Add user location layer
+      map.current.addLayer({
+        id: 'user-location',
+        type: 'circle',
+        source: 'user-location',
+        paint: {
+          'circle-radius': 12,
+          'circle-color': '#3b82f6',
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 3,
+          'circle-opacity': 1
+        }
+      });
+
+      console.log('User location marker added to HeatmapView');
+
+    } catch (error) {
+      console.error('Error adding user location to HeatmapView:', error);
+    }
+  }, [mapLoaded, userLocation]);
+
   const getCategoryLabel = (category: string) => {
     switch (category) {
       case 'walk_smoke': return '歩きタバコ';
@@ -293,6 +347,25 @@ export function HeatmapView() {
                 <option value={10}>10件以上</option>
               </select>
             </div>
+
+            {/* User Location Button */}
+            <Button
+              onClick={() => {
+                getCurrentLocation();
+                if (userLocation && map.current) {
+                  map.current.flyTo({
+                    center: [userLocation.lon, userLocation.lat],
+                    zoom: 15,
+                    duration: 1000
+                  });
+                }
+              }}
+              size="sm"
+              variant="outline"
+            >
+              <MapPin className="h-4 w-4" />
+              現在位置
+            </Button>
 
             {/* Refresh Button */}
             <Button
