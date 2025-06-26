@@ -1,0 +1,31 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "userDataDir": "./tmp/playwright/profile",
+    "launchOptions": {
+      "channel": "chromium",
+      "headless": false,
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--font-render-hinting=none",
+        "--disable-font-subpixel-positioning",
+        "--lang=ja-JP"
+      ]
+    },
+    "contextOptions": {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "locale": "ja-JP",
+      "timezoneId": "Asia/Tokyo",
+      "extraHTTPHeaders": {
+        "Accept-Language": "ja-JP,ja;q=0.9,en;q=0.8"
+      }
+    }
+  },
+  "outputDir": "./tmp/playwright"
+}

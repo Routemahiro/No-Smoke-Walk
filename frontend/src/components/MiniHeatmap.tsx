@@ -44,10 +44,17 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   useEffect(() => {
     const loadMapLibre = async () => {
       try {
+        console.log('🗺️ Loading MapLibre GL...');
         const maplib = await import('maplibre-gl');
+        console.log('🗺️ MapLibre GL loaded successfully:', !!maplib.default);
         setMaplibregl(maplib.default);
       } catch (error) {
         console.error('Failed to load MapLibre GL:', error);
+        // Retry after a delay
+        setTimeout(() => {
+          console.log('🗺️ Retrying MapLibre GL load...');
+          loadMapLibre();
+        }, 2000);
       }
     };
     loadMapLibre();
@@ -91,25 +98,52 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
       // Multiple event listeners to ensure readiness
       let loadComplete = false;
       let styleComplete = false;
+      let readyTimeout: NodeJS.Timeout | null = null;
 
       const checkFullyReady = () => {
+        console.log('🗺️ Checking map readiness:', { loadComplete, styleComplete, isStyleLoaded: map.current?.isStyleLoaded() });
         if (loadComplete && styleComplete && map.current?.isStyleLoaded()) {
+          // Clear timeout since we're ready normally
+          if (readyTimeout) {
+            clearTimeout(readyTimeout);
+            readyTimeout = null;
+          }
           // Extra delay for safety
           setTimeout(() => {
             if (map.current?.isStyleLoaded()) {
+              console.log('🗺️ Map is fully ready!');
               setIsMapFullyReady(true);
             }
-          }, 1000);
+          }, 500);
         }
       };
 
+      // Fallback timeout to ensure map becomes ready even if events don't fire
+      readyTimeout = setTimeout(() => {
+        console.log('🗺️ Map ready timeout triggered, forcing ready state');
+        setIsMapFullyReady(true);
+        readyTimeout = null;
+      }, 10000); // 10 second timeout
+
       map.current.on('load', () => {
+        console.log('🗺️ Map load event fired');
         loadComplete = true;
         checkFullyReady();
       });
 
       map.current.on('styledata', () => {
         if (map.current?.isStyleLoaded()) {
+          console.log('🗺️ Map style data loaded');
+          styleComplete = true;
+          checkFullyReady();
+        }
+      });
+
+      // Additional failsafe
+      map.current.on('idle', () => {
+        if (!loadComplete || !styleComplete) {
+          console.log('🗺️ Map idle event, setting ready state');
+          loadComplete = true;
           styleComplete = true;
           checkFullyReady();
         }
@@ -120,6 +154,9 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
     }
 
     return () => {
+      if (readyTimeout) {
+        clearTimeout(readyTimeout);
+      }
       if (map.current) {
         setIsMapFullyReady(false);
         map.current.remove();

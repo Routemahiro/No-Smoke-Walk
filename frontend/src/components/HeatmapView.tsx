@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -25,7 +24,8 @@ interface FilterState {
 
 export function HeatmapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
+  const map = useRef<any>(null);
+  const [maplibregl, setMaplibregl] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     days: 30,
@@ -35,9 +35,24 @@ export function HeatmapView() {
   const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(filters);
   const { location: userLocation, getCurrentLocation } = useGeolocation();
 
+  // Load MapLibre GL dynamically
+  useEffect(() => {
+    const loadMapLibre = async () => {
+      try {
+        console.log('🗺️ Loading MapLibre GL for HeatmapView...');
+        const maplib = await import('maplibre-gl');
+        console.log('🗺️ MapLibre GL loaded successfully for HeatmapView');
+        setMaplibregl(maplib.default);
+      } catch (error) {
+        console.error('Failed to load MapLibre GL:', error);
+      }
+    };
+    loadMapLibre();
+  }, []);
+
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !maplibregl) return;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
@@ -82,7 +97,7 @@ export function HeatmapView() {
         map.current = null;
       }
     };
-  }, []);
+  }, [maplibregl]);
 
   // Update heatmap data on map
   useEffect(() => {
@@ -189,7 +204,7 @@ export function HeatmapView() {
       const coordinates = e.lngLat;
       const properties = e.features?.[0]?.properties;
       
-      if (properties) {
+      if (properties && maplibregl) {
         new maplibregl.Popup()
           .setLngLat(coordinates)
           .setHTML(`

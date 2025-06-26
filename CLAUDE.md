@@ -14,6 +14,11 @@
 2. 詳細開発計画のチェックボックスを更新（[ ] → [x]）
 3. TodoWriteツールでTodoリストの状態を更新
 
+**🌏 コミュニケーション**
+- ユーザーとの対話は必ず日本語で行う
+- 技術的な説明も日本語で分かりやすく説明する
+- エラーメッセージも日本語で翻訳して報告する
+
 ### プロジェクト構造
 ```
 /
@@ -55,7 +60,10 @@ NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 
 ### 開発コマンド
 ```bash
-# フロントエンド開発サーバー
+# フロントエンド開発サーバー（メイン）
+cd frontend && npx next dev --port 3003
+
+# フロントエンド開発サーバー（通常）
 cd frontend && npm run dev
 
 # Workers開発サーバー
@@ -76,6 +84,7 @@ npm run lint
 - GET /api/heatmap - ヒートマップデータ
 - GET /api/admin/stats - 管理統計
 - GET /api/admin/export - データエクスポート
+- GET /api/geocode - 逆ジオコーディング（住所取得）
 
 ## 詳細開発計画
 
@@ -110,7 +119,7 @@ npm run lint
 #### 2.1 報告機能フロントエンド
 - [x] メインページレイアウト作成
 - [x] 位置情報取得機能（getCurrentPosition）
-- [ ] 手動位置調整機能（スライダー 0-200m）
+- [x] 手動位置調整機能（スライダー 0-200m）
 - [x] カテゴリ選択UI（walk_smoke, stand_smoke, litter）
 - [x] 報告投稿フォーム
 - [x] 連投防止機能（10秒クールダウン）
@@ -304,6 +313,36 @@ npm run lint
 - 2025-06-25 backend/wrangler.toml Cloudflare Workers設定の簡素化
 - 2025-06-25 API動作確認：ヘルスチェック・ヒートマップエンドポイント正常動作確認
 
+**2025-06-25 手動位置調整機能実装完了**
+- 2025-06-25 frontend/src/components/ReportForm.tsx 位置オフセットスライダー追加（0-200m、ランダム方向）
+- 2025-06-25 frontend/src/components/ReportForm.tsx 提出時にランダムオフセット適用ロジック実装
+- 2025-06-25 frontend/ UI/UX追加確認・TypeScript型チェック完了
+
+**2025-06-26 住所表示機能・デバッグ機能追加完了**
+- 2025-06-26 frontend/src/hooks/useGeolocation.ts 住所取得機能実装（OpenStreetMap Nominatim API統合）
+- 2025-06-26 frontend/src/components/ReportForm.tsx 住所表示UI追加（「位置情報を取得しました（精度：～～）」→住所表示に変更）
+- 2025-06-26 frontend/src/components/DebugStatus.tsx デバッグステータス表示コンポーネント追加（右下固定）
+- 2025-06-26 frontend/src/app/page.tsx DebugStatusコンポーネント統合
+- 2025-06-26 frontend/src/app/api/geocode/route.ts CORS回避用API route作成（サーバーサイド住所取得）
+- 2025-06-26 frontend/src/hooks/useGeolocation.ts CORSエラー解決（直接APIではなく内部APIルート使用）
+- 2025-06-26 frontend/ TypeScript型チェック・開発サーバー起動確認完了（port 3003）
+
+**2025-06-26 Playwright MCP文字化け対策実施（一部対応済み）**
+- 2025-06-26 CLAUDE.md 日本語対応ルール追加（ユーザーとの対話は日本語で行う）
+- 2025-06-26 playwright-config.json フォント設定追加（--font-render-hinting=none, --lang=ja-JP等）
+- 2025-06-26 frontend/src/app/layout.tsx Noto Sans JPフォント追加・言語設定をjaに変更
+- 2025-06-26 frontend/src/app/globals.css 日本語フォントファミリー設定
+- 2025-06-26 frontend/src/app/api/geocode/route.ts dynamic設定削除（Next.js静的エクスポートとの競合解決）
+- 2025-06-26 Playwright MCP スクリーンショット撮影機能テスト完了・文字化け確認（Google Fonts読み込み課題残存）
+
+**2025-06-26 ミニマップ表示・セキュリティ改善完了**
+- 2025-06-26 frontend/src/components/MiniHeatmap.tsx MapLibre GL動的インポートのエラーハンドリング強化（リトライ機能・詳細ログ追加）
+- 2025-06-26 frontend/src/components/MiniHeatmap.tsx マップ初期化プロセスの堅牢化（10秒タイムアウト・複数イベントリスナー・fallback機能）
+- 2025-06-26 frontend/src/app/portal/management/ 管理者ページURLをセキュアパスに変更（/admin → /portal/management）
+- 2025-06-26 frontend/src/app/portal/management/page.tsx 管理者ログインページを新しいパスに移動・リダイレクト先修正
+- 2025-06-26 frontend/src/app/portal/management/dashboard/page.tsx 管理者ダッシュボードを新しいパスに移動・リダイレクト先修正
+- 2025-06-26 frontend/src/app/page.tsx メインページの管理者リンクを新しいパス（/portal/management）に更新
+
 ## 現在の課題と対応状況
 
 ### ✅ 開発サーバー起動問題（解決済み）
@@ -344,3 +383,69 @@ npm run lint
 📝 利用案内（ミニマップ説明含む）
 📡 接続状況表示（デモデータ使用時）
 ```
+
+## Playwright MCP設定状況
+
+### 現在の設定状況（2025-06-26）
+- ✅ MCP Playwright追加完了（`claude mcp add playwright npx @playwright/mcp@latest`）
+- ✅ ~/.claude.json 設定ファイル作成完了
+- ✅ playwright-config.json 設定ファイル作成完了
+- 🔄 Claude Code再起動後にPlaywright MCP使用可能予定
+
+### 設定ファイル
+```json
+# ~/.claude.json
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--config", "./playwright-config.json"],
+      "env": {}
+    }
+  }
+}
+
+# playwright-config.json
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "userDataDir": "./tmp/playwright/profile",
+    "launchOptions": {
+      "channel": "chromium",
+      "headless": false,
+      "args": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+    },
+    "contextOptions": {
+      "viewport": {"width": 1920, "height": 1080},
+      "locale": "ja-JP",
+      "timezoneId": "Asia/Tokyo"
+    }
+  },
+  "outputDir": "./tmp/playwright"
+}
+```
+
+## Playwright MCP使用ルール
+
+### 絶対的な禁止事項
+
+1. **いかなる形式のコード実行も禁止**
+
+   - Python、JavaScript、Bash等でのブラウザ操作
+   - MCPツールを調査するためのコード実行
+   - subprocessやコマンド実行によるアプローチ
+
+2. **利用可能なのはMCPツールの直接呼び出しのみ**
+
+   - playwright:browser_navigate
+   - playwright:browser_screenshot
+   - 他のPlaywright MCPツール
+
+3. **エラー時は即座に報告**
+   - 回避策を探さない
+   - 代替手段を実行しない
+   - エラーメッセージをそのまま伝える
+
+   実装が終わった後はplaywright mcpを使って実際にアクセスして実装した機能を一通り試してエラーがないか確認する

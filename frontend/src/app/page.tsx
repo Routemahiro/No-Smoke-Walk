@@ -19,7 +19,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-3">
               <Link 
-                href="/admin"
+                href="/portal/management"
                 className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <Shield className="h-4 w-4" />

@@ -39,9 +39,21 @@ export function ReportForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [offset, setOffset] = useState(0); // 距離オフセット (m)
 
   const handleSubmit = async () => {
     if (!location || !selectedCategory) return;
+
+    // Adjust coordinates if offset is specified (random direction)
+    const applyOffset = (lat: number, lon: number, distance: number) => {
+      if (distance === 0) return { lat, lon };
+      const bearing = Math.random() * 2 * Math.PI; // 0–360°
+      const deltaLat = (distance * Math.cos(bearing)) / 111320; // 約1°あたりのメートル換算
+      const deltaLon = (distance * Math.sin(bearing)) / (111320 * Math.cos(lat * Math.PI / 180));
+      return { lat: lat + deltaLat, lon: lon + deltaLon };
+    };
+
+    const adjusted = applyOffset(location.lat, location.lon, offset);
 
     // Check rate limit before attempting submission
     if (isBlocked) {
@@ -61,8 +73,8 @@ export function ReportForm() {
       }
 
       await apiClient.submitReport({
-        lat: location.lat,
-        lon: location.lon,
+        lat: adjusted.lat,
+        lon: adjusted.lon,
         category: selectedCategory,
       });
 
@@ -157,6 +169,25 @@ export function ReportForm() {
             {location ? '位置情報を更新' : '位置情報を取得'}
           </Button>
         </div>
+
+        {/* Offset Slider */}
+        {location && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">🛠️ 位置の微調整</h4>
+            <input
+              type="range"
+              min={0}
+              max={200}
+              step={10}
+              value={offset}
+              onChange={(e) => setOffset(Number(e.target.value))}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              オフセット: 約{offset}m {offset > 0 && '(ランダム方向)'}
+            </p>
+          </div>
+        )}
 
         {/* Category Selection */}
         <div className="space-y-2">
