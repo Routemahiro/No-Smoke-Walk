@@ -95,7 +95,6 @@ export function ExportPanel() {
     switch (category) {
       case 'walk_smoke': return '歩きタバコ';
       case 'stand_smoke': return '立ち止まり喫煙';
-      case 'litter': return 'ポイ捨て';
       default: return 'すべて';
     }
   };
@@ -134,7 +133,6 @@ export function ExportPanel() {
                 <option value="">すべてのカテゴリ</option>
                 <option value="walk_smoke">歩きタバコ</option>
                 <option value="stand_smoke">立ち止まり喫煙</option>
-                <option value="litter">ポイ捨て</option>
               </select>
             </div>
 
@@ -293,7 +291,7 @@ export function ExportPanel() {
           <ul className="text-xs text-gray-600 space-y-1">
             <li>• エクスポートされるデータには個人情報は含まれません</li>
             <li>• IPアドレスは匿名化処理されています</li>
-            <li>• データは大阪市指導員の巡回資料としてご活用ください</li>
+            <li>• データは大阪府指導員の巡回資料としてご活用ください</li>
             <li>• 大量データの場合、ダウンロードに時間がかかる場合があります</li>
           </ul>
         </div>

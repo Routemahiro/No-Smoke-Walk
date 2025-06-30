@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Trash2, Users } from 'lucide-react';
+import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -23,12 +23,6 @@ const CATEGORY_CONFIG = {
     description: '禁煙エリアで立ち止まって喫煙している人を発見',
     icon: Cigarette,
     color: 'bg-orange-500 hover:bg-orange-600',
-  },
-  litter: {
-    label: 'ポイ捨て',
-    description: 'タバコの吸い殻などのポイ捨てを発見',
-    icon: Trash2,
-    color: 'bg-yellow-500 hover:bg-yellow-600',
   },
 } as const;
 
@@ -85,11 +79,8 @@ export function ReportForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          喫煙・ポイ捨て報告
+          喫煙報告
         </CardTitle>
-        <CardDescription>
-          歩きタバコや禁煙エリアでの喫煙、ポイ捨てを発見した場合はご報告ください
-        </CardDescription>
       </CardHeader>
       
       <CardContent className="space-y-4">
@@ -100,7 +91,7 @@ export function ReportForm() {
 
         {/* Category Selection */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">🚭 報告内容</h4>
+          <h4 className="text-sm font-medium">🚭 報告内容を選択</h4>
           
           <div className="grid gap-2">
             {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
@@ -141,32 +132,34 @@ export function ReportForm() {
             </Alert>
           )}
           
+          
           <Button
             onClick={handleSubmit}
             disabled={!location || !selectedCategory || submitting || isBlocked}
-            className="w-full"
+            className={`w-full transition-all duration-200 ${
+              location && selectedCategory && !submitting && !isBlocked 
+                ? 'bg-green-600 hover:bg-green-700 shadow-lg transform hover:scale-105 border-2 border-green-400' 
+                : ''
+            }`}
             size="lg"
           >
             {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                送信中...
+              </>
             ) : isBlocked ? (
               `ご協力感謝 (${remainingTime}s)`
+            ) : location && selectedCategory ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                報告を送信
+              </>
             ) : (
               '報告を送信'
             )}
           </Button>
           
-          {!location && (
-            <p className="text-xs text-muted-foreground text-center">
-              位置情報の取得が必要です
-            </p>
-          )}
-          
-          {location && !selectedCategory && (
-            <p className="text-xs text-muted-foreground text-center">
-              報告内容を選択してください
-            </p>
-          )}
         </div>
 
         {/* Rate Limit Status */}

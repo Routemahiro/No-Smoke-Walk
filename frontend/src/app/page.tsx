@@ -14,7 +14,7 @@ export default function Home() {
                 🚭 No-Smoke Walk Osaka
               </h1>
               <p className="text-sm text-gray-600">
-                大阪市の歩きタバコ・ポイ捨て報告システム
+                大阪府の迷惑タバコ報告システム
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -70,12 +70,12 @@ export default function Home() {
               </h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
-                  大阪市内で歩きタバコや禁煙エリアでの喫煙、ポイ捨てを発見した際に、
-                  市民の皆様から情報を収集し、行政指導の効率化を図るシステムです。
+                  大阪府内で迷惑タバコを発見した際に、
+                  府民の皆様から情報を収集し、行政指導の効率化を図るシステムです。
                 </p>
                 <p>
                   報告いただいた情報は匿名化処理され、
-                  大阪市指導員の巡回ルート最適化に活用されます。
+                  大阪府指導員の巡回ルート最適化に活用されます。
                 </p>
               </div>
             </div>
@@ -99,13 +99,6 @@ export default function Home() {
                     <p className="text-sm text-gray-600">禁煙エリアで立ち止まって喫煙している人を発見した場合</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <h4 className="font-medium">ポイ捨て</h4>
-                    <p className="text-sm text-gray-600">タバコの吸い殻などのポイ捨てを発見した場合</p>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -114,7 +107,7 @@ export default function Home() {
                 🔒 プライバシー保護
               </h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>• 位置情報は市区町村レベルまで丸められて保存されます</p>
+                <p>• 位置情報は報告処理のためのみ使用され、精度は約200m以内です</p>
                 <p>• IPアドレスはハッシュ化され、個人の特定はできません</p>
                 <p>• 報告データは365日後に自動削除されます</p>
                 <p>• 公開される統計情報には個人情報は含まれません</p>
@@ -127,7 +120,7 @@ export default function Home() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-sm text-gray-500">
-            <p>© 2025 No-Smoke Walk Osaka. 大阪市路上喫煙対策の一環として運営されています。</p>
+            <p>© 2025 No-Smoke Walk Osaka. 大阪府路上喫煙対策の一環として運営されています。</p>
           </div>
         </div>
       </footer>

@@ -56,7 +56,8 @@
       "mcp__supabase__generate_typescript_types",
       "Bash(timeout:*)",
       "Bash(wrangler dev:*)",
-      "Bash(npx wrangler dev:*)"
+      "Bash(npx wrangler dev:*)",
+      "Bash(kill:*)"
     ],
     "deny": []
   },

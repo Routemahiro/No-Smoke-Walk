@@ -11,7 +11,7 @@ interface HeatmapState {
 }
 
 interface HeatmapFilters {
-  category?: 'walk_smoke' | 'stand_smoke' | 'litter';
+  category?: 'walk_smoke' | 'stand_smoke';
   days?: number;
   minReports?: number;
 }
@@ -92,7 +92,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
             },
             properties: {
               count: 3,
-              category: 'litter'
+              category: 'walk_smoke'
             }
           }
         ]

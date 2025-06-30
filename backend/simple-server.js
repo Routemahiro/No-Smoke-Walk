@@ -66,17 +66,6 @@ const sampleHeatmapData = {
         type: 'Feature',
         geometry: {
           type: 'Point',
-          coordinates: [135.4950, 34.6980] // Umeda area
-        },
-        properties: {
-          count: 3,
-          category: 'litter'
-        }
-      },
-      {
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
           coordinates: [135.5200, 34.6850] // Tennoji area
         },
         properties: {
@@ -168,6 +157,17 @@ const server = http.createServer(async (req, res) => {
       try {
         const reportData = JSON.parse(body);
         console.log('Report submitted:', reportData);
+        
+        // Validate category (only allow walk_smoke and stand_smoke)
+        const validCategories = ['walk_smoke', 'stand_smoke'];
+        if (!validCategories.includes(reportData.category)) {
+          res.writeHead(400);
+          res.end(JSON.stringify({
+            success: false,
+            error: 'Invalid category. Only walk_smoke and stand_smoke are allowed.'
+          }));
+          return;
+        }
         
         // Create hashes for IP and fingerprint (ensure exactly 64 characters)
         const ipAddress = req.socket.remoteAddress || req.connection.remoteAddress || '127.0.0.1';

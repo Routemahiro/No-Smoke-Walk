@@ -1,5 +1,5 @@
 // 報告カテゴリ
-export type ReportCategory = 'walk_smoke' | 'stand_smoke' | 'litter';
+export type ReportCategory = 'walk_smoke' | 'stand_smoke';
 
 // 報告データ
 export interface Report {

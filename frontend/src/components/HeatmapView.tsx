@@ -13,7 +13,6 @@ const OSAKA_CENTER: [number, number] = [135.5023, 34.6937]; // [lng, lat]
 const CATEGORY_COLORS = {
   walk_smoke: '#ef4444',    // red-500
   stand_smoke: '#f97316',   // orange-500
-  litter: '#eab308',        // yellow-500
 };
 
 interface FilterState {
@@ -103,10 +102,14 @@ export function HeatmapView() {
   useEffect(() => {
     if (!map.current || !mapLoaded || !heatmapData) return;
 
-    // Remove existing heatmap layer and source
+    // Remove existing layers that use the heatmap-data source
     if (map.current.getLayer('heatmap-layer')) {
       map.current.removeLayer('heatmap-layer');
     }
+    if (map.current.getLayer('heatmap-points')) {
+      map.current.removeLayer('heatmap-points');
+    }
+    // Remove source only after all layers using it are removed
     if (map.current.getSource('heatmap-data')) {
       map.current.removeSource('heatmap-data');
     }
@@ -190,7 +193,6 @@ export function HeatmapView() {
           'case',
           ['==', ['get', 'category'], 'walk_smoke'], CATEGORY_COLORS.walk_smoke,
           ['==', ['get', 'category'], 'stand_smoke'], CATEGORY_COLORS.stand_smoke,
-          ['==', ['get', 'category'], 'litter'], CATEGORY_COLORS.litter,
           '#666666'
         ],
         'circle-opacity': 0.7,
@@ -285,7 +287,6 @@ export function HeatmapView() {
     switch (category) {
       case 'walk_smoke': return '歩きタバコ';
       case 'stand_smoke': return '立ち止まり喫煙';
-      case 'litter': return 'ポイ捨て';
       default: return category;
     }
   };
@@ -329,7 +330,6 @@ export function HeatmapView() {
                 <option value="">全カテゴリ</option>
                 <option value="walk_smoke">歩きタバコ</option>
                 <option value="stand_smoke">立ち止まり喫煙</option>
-                <option value="litter">ポイ捨て</option>
               </select>
             </div>
 

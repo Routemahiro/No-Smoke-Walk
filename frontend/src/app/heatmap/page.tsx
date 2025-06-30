@@ -21,7 +21,7 @@ export default function HeatmapPage() {
                   🗺️ ヒートマップ表示
                 </h1>
                 <p className="text-sm text-gray-600">
-                  大阪市内の喫煙・ポイ捨て報告データの可視化
+                  大阪府内の迷惑タバコ報告データの可視化
                 </p>
               </div>
             </div>
@@ -39,7 +39,7 @@ export default function HeatmapPage() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-sm text-gray-500">
-            <p>© 2025 No-Smoke Walk Osaka. 大阪市路上喫煙対策の一環として運営されています。</p>
+            <p>© 2025 No-Smoke Walk Osaka. 大阪府路上喫煙対策の一環として運営されています。</p>
           </div>
         </div>
       </footer>
