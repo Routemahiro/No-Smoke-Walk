@@ -66,13 +66,16 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
     // Get location name from coordinates
     const location = await getLocationName(body.lat, body.lon);
 
-    // Create Supabase client
-    const supabase = createSupabaseClient(env);
-
-    // Insert report
-    const { data, error } = await supabase
-      .from('reports')
-      .insert({
+    // Insert report using HTTP API
+    const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports`, {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
         lat: body.lat,
         lon: body.lon,
         category: body.category,
@@ -82,11 +85,11 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
         fp_hash: fingerprintHash,
         confidence_score: 1
       })
-      .select('id, reported_at')
-      .single();
+    });
 
-    if (error) {
-      console.error('Database error:', error);
+    if (!supabaseResponse.ok) {
+      const errorText = await supabaseResponse.text();
+      console.error('Database error:', errorText);
       return new Response(JSON.stringify({
         success: false,
         error: 'Failed to save report'
@@ -95,6 +98,8 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    const data = await supabaseResponse.json();
 
     // Update abuse guard if enabled
     if (env.ABUSE_GUARD === 'true') {
@@ -105,8 +110,8 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
     const response: ApiResponse = {
       success: true,
       data: {
-        id: data.id,
-        reported_at: data.reported_at,
+        id: data[0].id,
+        reported_at: data[0].reported_at,
         message: 'Report submitted successfully'
       }
     };

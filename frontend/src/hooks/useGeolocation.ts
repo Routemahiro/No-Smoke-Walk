@@ -9,6 +9,7 @@ interface GeolocationState {
   loading: boolean;
   address: string | null;
   addressLoading: boolean;
+  isWatching: boolean;
 }
 
 export function useGeolocation(enableHighAccuracy = true) {
@@ -18,7 +19,9 @@ export function useGeolocation(enableHighAccuracy = true) {
     loading: false,
     address: null,
     addressLoading: false,
+    isWatching: false,
   });
+  const [watchId, setWatchId] = useState<number | null>(null);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -157,6 +160,88 @@ export function useGeolocation(enableHighAccuracy = true) {
     }));
   };
 
+  const startWatching = () => {
+    if (!navigator.geolocation) {
+      setState(prev => ({
+        ...prev,
+        error: 'このブラウザは位置情報に対応していません',
+      }));
+      return;
+    }
+
+    if (watchId) {
+      console.log('📍 Already watching position');
+      return;
+    }
+
+    console.log('📍 Starting position watch');
+    setState(prev => ({ ...prev, isWatching: true, error: null }));
+
+    const options: PositionOptions = {
+      enableHighAccuracy,
+      timeout: 10000,
+      maximumAge: 5000, // Update more frequently for real-time tracking
+    };
+
+    const id = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude: lat, longitude: lon, accuracy } = position.coords;
+        console.log('📍 Position updated:', { lat, lon, accuracy });
+        
+        // Validate coordinates are within Japan bounds
+        if (lat < 24 || lat > 46 || lon < 123 || lon > 146) {
+          console.log('📍 Location outside Japan bounds');
+          return;
+        }
+
+        const newLocation = { lat, lon, accuracy };
+        setState(prev => ({
+          ...prev,
+          location: newLocation,
+          error: null,
+        }));
+
+        // Get address for the new location (throttled to avoid too many requests)
+        getAddressFromCoordinates(lat, lon);
+      },
+      (error) => {
+        console.error('📍 Watch position error:', error);
+        let errorMessage = 'リアルタイム位置追跡でエラーが発生しました';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = '位置情報のアクセスが拒否されました';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = '位置情報が利用できません';
+            break;
+          case error.TIMEOUT:
+            errorMessage = '位置情報の取得がタイムアウトしました';
+            break;
+        }
+
+        setState(prev => ({
+          ...prev,
+          error: errorMessage,
+          isWatching: false,
+        }));
+        setWatchId(null);
+      },
+      options
+    );
+
+    setWatchId(id);
+  };
+
+  const stopWatching = () => {
+    if (watchId) {
+      console.log('📍 Stopping position watch');
+      navigator.geolocation.clearWatch(watchId);
+      setWatchId(null);
+      setState(prev => ({ ...prev, isWatching: false }));
+    }
+  };
+
   // Auto-get location on mount if supported
   useEffect(() => {
     console.log('📍 useGeolocation hook mounted, navigator.geolocation available:', !!navigator.geolocation);
@@ -164,7 +249,15 @@ export function useGeolocation(enableHighAccuracy = true) {
       console.log('📍 Auto-triggering location fetch on mount');
       getCurrentLocation();
     }
-  }, []);
+
+    // Cleanup watch on unmount
+    return () => {
+      if (watchId) {
+        console.log('📍 Cleaning up position watch on unmount');
+        navigator.geolocation.clearWatch(watchId);
+      }
+    };
+  }, [watchId]);
 
   // Debug log current state
   console.log('📍 useGeolocation current state:', {
@@ -180,6 +273,8 @@ export function useGeolocation(enableHighAccuracy = true) {
     getCurrentLocation,
     clearError,
     setManualLocation,
+    startWatching,
+    stopWatching,
     isSupported: !!navigator.geolocation,
   };
 }

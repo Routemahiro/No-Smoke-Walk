@@ -36,6 +36,7 @@
 │   │   ├── utils/        # ユーティリティ
 │   │   └── types/        # TypeScript型定義
 │   ├── wrangler.toml     # Workers設定
+│   ├── simple-server.js  # 開発用Node.jsサーバー
 │   └── package.json
 ├── database/             # Supabase設定
 │   ├── migrations/       # データベース移行
@@ -46,12 +47,12 @@
 ### 環境変数設定
 ```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY0NzMsImV4cCI6MjA2NjgwMjQ3M30.3sr3dXq7GOz8yLcKn602Ba8Ej-X1zIpCn-T_BxM5Ofk
+SUPABASE_SERVICE_ROLE_KEY=（Cloudflare Workers用）
 
 # Cloudflare Workers
-DATABASE_URL=
+DATABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
 ABUSE_GUARD=false
 
 # Google AdSense
@@ -60,14 +61,29 @@ NEXT_PUBLIC_ADSENSE_CLIENT_ID=
 
 ### 開発コマンド
 ```bash
-# フロントエンド開発サーバー（メイン）
+# フロントエンド開発サーバー（メイン - 推奨）
 cd frontend && npx next dev --port 3003
 
-# フロントエンド開発サーバー（通常）
-cd frontend && npm run dev
+# フロントエンド開発サーバー（バックグラウンド実行）
+cd frontend && npx next dev --port 3003 > /dev/null 2>&1 &
 
-# Workers開発サーバー
+# バックエンドAPIサーバー（推奨 - シンプル版）
+cd backend && node simple-server.js
+
+# バックエンドAPIサーバー（バックグラウンド実行）
+cd backend && node simple-server.js > /dev/null 2>&1 &
+
+# Workers開発サーバー（Cloudflare Workers）
 cd backend && npm run dev
+
+# 両方のサーバー同時起動（推奨方法）
+cd frontend && npx next dev --port 3003 > /dev/null 2>&1 & cd ../backend && node simple-server.js > /dev/null 2>&1 &
+
+# サーバープロセス確認
+ps aux | grep -E "(next|node.*simple-server)"
+
+# サーバー停止
+pkill -f "next dev" && pkill -f "simple-server"
 
 # データベース移行
 cd database && supabase db push
@@ -78,6 +94,13 @@ npm run typecheck
 # Lint
 npm run lint
 ```
+
+**⚠️ 開発サーバー起動時の注意事項**
+- 長時間実行する場合は必ずバックグラウンド実行（`&`）を使用
+- Bashツールの2分タイムアウト制限を回避するため
+- Playwright MCPテスト前は必ずプロセス生存確認を実施
+- `curl -s http://localhost:3003 | head -5` でフロントエンド動作確認
+- `curl -s http://localhost:8787/api/health` でバックエンド動作確認
 
 ### API エンドポイント
 - POST /api/reports - 報告投稿
@@ -166,18 +189,18 @@ npm run lint
 - [ ] 協賛POIバッジ機能
 
 #### 4.2 CI/CD・デプロイ設定
-- [ ] GitHub Actions ワークフロー作成
-- [ ] Cloudflare Pages 設定（フロントエンド）
-- [ ] Cloudflare Workers 設定（バックエンド）
-- [ ] 環境変数管理
+- [x] GitHub Actions ワークフロー作成
+- [x] Cloudflare Pages 設定（フロントエンド）
+- [x] Cloudflare Workers 設定（バックエンド）
+- [x] 環境変数管理
 - [ ] 本番環境テスト
 
-#### 4.3 不正対策機能（オプション）
-- [ ] IP アドレス SHA-256 ハッシュ化
-- [ ] ブラウザフィンガープリント取得
-- [ ] レート制限実装（10分間で5件）
-- [ ] abuse_guard テーブル設計
-- [ ] 環境変数での ON/OFF 切り替え
+#### 4.3 不正対策機能
+- [x] IP アドレス SHA-256 ハッシュ化
+- [x] ブラウザフィンガープリント取得
+- [x] レート制限実装（10分間で5件）
+- [x] abuse_guard テーブル設計
+- [x] 環境変数での ON/OFF 切り替え
 
 ### 技術的考慮事項
 
@@ -343,46 +366,51 @@ npm run lint
 - 2025-06-26 frontend/src/app/portal/management/dashboard/page.tsx 管理者ダッシュボードを新しいパスに移動・リダイレクト先修正
 - 2025-06-26 frontend/src/app/page.tsx メインページの管理者リンクを新しいパス（/portal/management）に更新
 
-## 現在の課題と対応状況
+**2025-06-29 開発サーバー起動方法改善・Playwright MCP動作確認完了**
+- 2025-06-29 CLAUDE.md 開発コマンドセクション更新（バックグラウンド実行・同時起動・プロセス管理コマンド追加）
+- 2025-06-29 開発サーバー起動問題解決（Bashツール2分タイムアウト対策・バックグラウンド実行方式採用）
+- 2025-06-29 Playwright MCP動作確認完了（メインページアクセス・スクリーンショット撮影・全機能動作確認）
+- 2025-06-29 プロセス管理ベストプラクティス確立（起動・確認・停止コマンド統合）
 
-### ✅ 開発サーバー起動問題（解決済み）
-**問題**: 別プロジェクト（our_housework20250324）のNext.js設定が混在してmiddleware-manifest.jsonエラー
+**2025-06-29 重要なAPI関連エラー修正・全機能復旧完了**
+- 2025-06-29 エラー根本原因特定（Next.js静的エクスポート設定とAPI Routes競合・バックエンドサーバー未起動）
+- 2025-06-29 frontend/next.config.ts 条件分岐追加（開発環境でAPI Routes有効化・本番は静的エクスポート維持）
+- 2025-06-29 frontend/src/app/api/geocode/route.ts 動的設定追加（export const dynamic = 'force-dynamic'）
+- 2025-06-29 backend/simple-server.js バックグラウンド起動（port 8787・ヒートマップ・health APIエンドポイント正常稼働）
+- 2025-06-29 API動作確認完了（geocode: 住所取得成功「吹田市」・heatmap: GeoJSONデータ4件取得成功）
+- 2025-06-29 Playwright MCP検証完了（ミニヒートマップ表示・位置情報取得・エラー件数3→1件に大幅減少）
 
-**解決内容** (2025-06-24):
-1. ✅ 開発サーバー起動テスト完了（port 3003で正常動作）
-2. ✅ MiniHeatmapのコメントアウト解除完了
-3. ✅ MapLibre GLの動的インポート正常動作確認
-4. ✅ TypeScript型チェック完了（エラーなし）
+**2025-06-30 完全フロー実現・全機能完了**
+- 2025-06-30 backend/simple-server.js Supabase HTTP API統合完了（anonキー使用・SDK依存関係回避）
+- 2025-06-30 backend/simple-server.js ヒートマップエンドポイント実データ取得実装（12件のリアルタイムデータ表示）
+- 2025-06-30 backend/simple-server.js 投稿エンドポイント完全動作確認（新規報告ID: dbd31523-8306-402b-81cc-a86c8d244930）
+- 2025-06-30 Frontend→Backend→Database→Heatmap完全フロー動作確認完了
+- 2025-06-30 データベース最終状態：合計12件報告（吹田市4件・5分以内2件）
+- 2025-06-30 Playwright MCP E2Eテスト完了（投稿成功メッセージ・ヒートマップリアルタイム更新確認）
+- 2025-06-30 🎉 **No-Smoke Walk Osaka 完全動作確認完了** 🎉
 
-### ✅ ミニマップ読み込みエラー（解決済み）
-**問題**: MiniHeatmapコンポーネントでAPIからのデータ取得時にエラー（CONNECTION_REFUSED）
+## 現在の状況（2025-06-30最終更新）
 
-**解決内容** (2025-06-25):
-1. ✅ APIクライアントのネットワークエラーハンドリング強化
-2. ✅ useHeatmapフックでCONNECTION_REFUSEDエラーを確実にキャッチ
-3. ✅ シンプルなNode.js APIサーバー作成・起動（port 8787）
-4. ✅ ヘルスチェック・ヒートマップエンドポイント動作確認
-5. ✅ 大阪エリアの実際のヒートマップデータ表示機能完成
+### ✅ 完全動作確認済み機能
+1. **フロントエンドUI投稿機能** - 位置情報取得・カテゴリ選択・投稿成功
+2. **リアルタイムAPI機能** - Supabase HTTP API統合・新規投稿正常作成
+3. **データベース保存機能** - 合計12件の報告・ハッシュ化IP/フィンガープリント
+4. **ヒートマップリアルタイム更新** - 12件のリアルデータ表示・投稿即座反映
 
-### MiniHeatmapコンポーネント詳細
-- 場所: `frontend/src/components/MiniHeatmap.tsx`
-- 機能: 周辺報告状況の表示、詳細マップへのリンク、ユーザー位置表示
-- 技術: MapLibre GLの動的インポート、useHeatmapフック活用
-- レイアウト: ReportFormの最上部に配置予定
+### 🚀 技術的達成事項
+- **フロントエンド**: Next.js 15 + MapLibre GL + TypeScript完全動作
+- **バックエンド**: Node.js simple-server.js + Supabase HTTP API統合  
+- **データベース**: Supabase PostGIS + 12件の実データ
+- **認証**: anonキーでの安全なAPI接続確立
+- **リアルタイム**: 投稿→DB→ヒートマップの完全フロー実現
 
-### ✅ 実装済みUI構成
+### ⭐ 最終確認済みワークフロー
 ```
-🗺️ ミニヒートマップ（128px高さ、大阪エリア周辺状況表示）
-   ├── 実際のヒートマップデータ表示（歩きタバコ・立ち止まり喫煙・ポイ捨て）
-   ├── ユーザー位置マーカー（青い円）
-   └── 「詳細マップ」ボタン
-📍 位置情報の確認
-   └── 「位置情報を取得/更新」ボタン  
-🚭 報告内容（3つのカテゴリボタン）
-📊 投稿状況表示（レート制限・感謝メッセージ）
-📝 利用案内（ミニマップ説明含む）
-📡 接続状況表示（デモデータ使用時）
+👤 ユーザー投稿 → 📍 位置情報取得 → 📝 カテゴリ選択 → 
+🚀 API送信 → 💾 Supabase保存 → 🗺️ ヒートマップ更新 → ✅ 成功表示
 ```
+
+**🎉 No-Smoke Walk Osakaプロジェクト完全動作確認完了！**
 
 ## Playwright MCP設定状況
 
@@ -390,7 +418,7 @@ npm run lint
 - ✅ MCP Playwright追加完了（`claude mcp add playwright npx @playwright/mcp@latest`）
 - ✅ ~/.claude.json 設定ファイル作成完了
 - ✅ playwright-config.json 設定ファイル作成完了
-- 🔄 Claude Code再起動後にPlaywright MCP使用可能予定
+- ✅ Claude Code再起動後にPlaywright MCP使用可能確認済み
 
 ### 設定ファイル
 ```json
@@ -401,6 +429,17 @@ npm run lint
       "type": "stdio",
       "command": "npx",
       "args": ["@playwright/mcp@latest", "--config", "./playwright-config.json"],
+      "env": {}
+    },
+    "supabase": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "sbp_eb748385d390053d5f05678148c1d3f1c47410d4",
+        "YOUR_PERSONAL_ACCESS_TOKEN_HERE"
+      ],
       "env": {}
     }
   }
@@ -432,13 +471,11 @@ npm run lint
 ### 絶対的な禁止事項
 
 1. **いかなる形式のコード実行も禁止**
-
    - Python、JavaScript、Bash等でのブラウザ操作
    - MCPツールを調査するためのコード実行
    - subprocessやコマンド実行によるアプローチ
 
 2. **利用可能なのはMCPツールの直接呼び出しのみ**
-
    - playwright:browser_navigate
    - playwright:browser_screenshot
    - 他のPlaywright MCPツール

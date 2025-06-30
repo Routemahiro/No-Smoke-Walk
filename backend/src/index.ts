@@ -33,6 +33,22 @@ export default {
       });
     }
 
+    // Debug endpoint to check environment variables
+    if (url.pathname === '/api/debug/env') {
+      return new Response(JSON.stringify({ 
+        hasSupabaseUrl: !!env.SUPABASE_URL,
+        hasSupabaseKey: !!env.SUPABASE_SERVICE_ROLE_KEY,
+        supabaseUrlPrefix: env.SUPABASE_URL ? env.SUPABASE_URL.substring(0, 20) + '...' : 'undefined',
+        environment: env.ENVIRONMENT || 'undefined',
+        abuseGuard: env.ABUSE_GUARD || 'undefined'
+      }), {
+        headers: { 
+          'Content-Type': 'application/json',
+          ...corsHeaders 
+        },
+      });
+    }
+
     if (url.pathname === '/api/reports' && request.method === 'POST') {
       return handleReportSubmission(request, env);
     }

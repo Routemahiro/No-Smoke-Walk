@@ -33,27 +33,15 @@ const CATEGORY_CONFIG = {
 } as const;
 
 export function ReportForm() {
-  const { location, error: locationError, loading: locationLoading, getCurrentLocation, address, addressLoading } = useGeolocation();
+  const { location } = useGeolocation();
   const { isBlocked, remainingTime, submissionCount, maxSubmissions, recordSubmission } = useRateLimit();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [offset, setOffset] = useState(0); // 距離オフセット (m)
 
   const handleSubmit = async () => {
     if (!location || !selectedCategory) return;
-
-    // Adjust coordinates if offset is specified (random direction)
-    const applyOffset = (lat: number, lon: number, distance: number) => {
-      if (distance === 0) return { lat, lon };
-      const bearing = Math.random() * 2 * Math.PI; // 0–360°
-      const deltaLat = (distance * Math.cos(bearing)) / 111320; // 約1°あたりのメートル換算
-      const deltaLon = (distance * Math.sin(bearing)) / (111320 * Math.cos(lat * Math.PI / 180));
-      return { lat: lat + deltaLat, lon: lon + deltaLon };
-    };
-
-    const adjusted = applyOffset(location.lat, location.lon, offset);
 
     // Check rate limit before attempting submission
     if (isBlocked) {
@@ -73,8 +61,8 @@ export function ReportForm() {
       }
 
       await apiClient.submitReport({
-        lat: adjusted.lat,
-        lon: adjusted.lon,
+        lat: location.lat,
+        lon: location.lon,
         category: selectedCategory,
       });
 
@@ -91,10 +79,6 @@ export function ReportForm() {
     }
   };
 
-  const handleRetryLocation = () => {
-    setSubmitError(null);
-    getCurrentLocation();
-  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -112,82 +96,7 @@ export function ReportForm() {
         {/* Mini Heatmap */}
         <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
 
-        {/* Location Status */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium">📍 位置情報の確認</h4>
-          
-          {locationLoading && (
-            <Alert>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <AlertDescription>位置情報を取得中...</AlertDescription>
-            </Alert>
-          )}
-          
-          {locationError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{locationError}</AlertDescription>
-            </Alert>
-          )}
-          
-          {location && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="space-y-1">
-                  <div>
-                    位置情報を取得しました
-                    {location.accuracy && ` (精度: 約${Math.round(location.accuracy)}m)`}
-                  </div>
-                  {addressLoading ? (
-                    <div className="flex items-center gap-1 text-xs text-gray-600">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      住所を取得中...
-                    </div>
-                  ) : address ? (
-                    <div className="text-xs text-gray-700 bg-gray-50 px-2 py-1 rounded">
-                      📍 {address}
-                    </div>
-                  ) : null}
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRetryLocation}
-            disabled={locationLoading}
-            className="w-full"
-          >
-            {locationLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <MapPin className="h-4 w-4 mr-2" />
-            )}
-            {location ? '位置情報を更新' : '位置情報を取得'}
-          </Button>
-        </div>
 
-        {/* Offset Slider */}
-        {location && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">🛠️ 位置の微調整</h4>
-            <input
-              type="range"
-              min={0}
-              max={200}
-              step={10}
-              value={offset}
-              onChange={(e) => setOffset(Number(e.target.value))}
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground text-center">
-              オフセット: 約{offset}m {offset > 0 && '(ランダム方向)'}
-            </p>
-          </div>
-        )}
 
         {/* Category Selection */}
         <div className="space-y-2">
