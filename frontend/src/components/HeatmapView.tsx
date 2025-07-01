@@ -53,6 +53,9 @@ export function HeatmapView() {
   useEffect(() => {
     if (!mapContainer.current || map.current || !maplibregl) return;
 
+    // Use user location as center if available, otherwise fallback to Osaka center
+    const initialCenter = userLocation ? [userLocation.lon, userLocation.lat] : OSAKA_CENTER;
+
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -75,8 +78,8 @@ export function HeatmapView() {
           }
         ]
       },
-      center: OSAKA_CENTER,
-      zoom: 12,
+      center: initialCenter,
+      zoom: userLocation ? 15 : 12, // Higher zoom if we have user location
       attributionControl: false
     });
 
@@ -96,7 +99,26 @@ export function HeatmapView() {
         map.current = null;
       }
     };
-  }, [maplibregl]);
+  }, [maplibregl, userLocation]);
+
+  // Move map to user location when it becomes available
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !userLocation) return;
+
+    // Only move if we're still at the default Osaka center
+    const currentCenter = map.current.getCenter();
+    const isAtOsakaCenter = Math.abs(currentCenter.lng - OSAKA_CENTER[0]) < 0.01 && 
+                           Math.abs(currentCenter.lat - OSAKA_CENTER[1]) < 0.01;
+
+    if (isAtOsakaCenter) {
+      console.log('Moving map to user location:', userLocation);
+      map.current.flyTo({
+        center: [userLocation.lon, userLocation.lat],
+        zoom: 15,
+        duration: 1500
+      });
+    }
+  }, [mapLoaded, userLocation]);
 
   // Update heatmap data on map
   useEffect(() => {
@@ -312,7 +334,7 @@ export function HeatmapView() {
             ヒートマップ表示
           </CardTitle>
           <CardDescription>
-            大阪市内の喫煙・ポイ捨て報告データをヒートマップで可視化
+            大阪府内の迷惑タバコ報告データをヒートマップで可視化
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -365,14 +387,13 @@ export function HeatmapView() {
 
             {/* User Location Button */}
             <Button
-              onClick={() => {
-                getCurrentLocation();
-                if (userLocation && map.current) {
-                  map.current.flyTo({
-                    center: [userLocation.lon, userLocation.lat],
-                    zoom: 15,
-                    duration: 1000
-                  });
+              onClick={async () => {
+                try {
+                  await getCurrentLocation();
+                  // getCurrentLocation is async, so we need to wait for the location state to update
+                  // The map will automatically move via the useEffect above
+                } catch (error) {
+                  console.error('Failed to get current location:', error);
                 }
               }}
               size="sm"
@@ -431,7 +452,7 @@ export function HeatmapView() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-red-500"></div>
               <span className="text-sm">歩きタバコ</span>
@@ -439,10 +460,6 @@ export function HeatmapView() {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-orange-500"></div>
               <span className="text-sm">立ち止まり喫煙</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-              <span className="text-sm">ポイ捨て</span>
             </div>
           </div>
           <div className="mt-4 text-xs text-gray-600">

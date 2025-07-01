@@ -16,13 +16,13 @@ const CATEGORY_CONFIG = {
     label: '歩きタバコ',
     description: '歩きながら喫煙している人を発見',
     icon: Users,
-    color: 'bg-red-500 hover:bg-red-600',
+    color: 'bg-rose-500 hover:bg-rose-600',
   },
   stand_smoke: {
     label: '立ち止まり喫煙',
     description: '禁煙エリアで立ち止まって喫煙している人を発見',
     icon: Cigarette,
-    color: 'bg-orange-500 hover:bg-orange-600',
+    color: 'bg-amber-500 hover:bg-amber-600',
   },
 } as const;
 
@@ -79,7 +79,7 @@ export function ReportForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          喫煙報告
+          迷惑タバコの報告
         </CardTitle>
       </CardHeader>
       
@@ -138,7 +138,7 @@ export function ReportForm() {
             disabled={!location || !selectedCategory || submitting || isBlocked}
             className={`w-full transition-all duration-200 ${
               location && selectedCategory && !submitting && !isBlocked 
-                ? 'bg-green-600 hover:bg-green-700 shadow-lg transform hover:scale-105 border-2 border-green-400' 
+                ? 'bg-emerald-500 hover:bg-emerald-600 shadow-lg transform hover:scale-105 border-2 border-emerald-300' 
                 : ''
             }`}
             size="lg"
@@ -181,8 +181,6 @@ export function ReportForm() {
         <div className="bg-muted/50 p-3 rounded-lg">
           <h5 className="text-xs font-medium mb-1">ご利用について</h5>
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• まずは上のマップで周辺の状況をご確認ください</li>
-            <li>• 正確な情報の報告にご協力ください</li>
             <li>• 連続投稿防止のため、10分間に{maxSubmissions}件まで投稿可能です</li>
             <li>• 報告された情報は行政指導の資料として活用されます</li>
           </ul>

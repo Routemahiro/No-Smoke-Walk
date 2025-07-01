@@ -1,7 +1,7 @@
 import { ReportForm } from '@/components/ReportForm';
 import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
-import { Map, Shield } from 'lucide-react';
+import { Map } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -9,25 +9,32 @@ export default function Home() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                🚭 No-Smoke Walk Osaka
-              </h1>
-              <p className="text-sm text-gray-600">
-                大阪府の迷惑タバコ報告システム
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link 
-                href="/portal/management"
-                className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <Shield className="h-4 w-4" />
-                管理者
-              </Link>
-              <div className="text-sm text-gray-500">
-                v1.1.0
+            <div className="flex items-center gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 0 500 100" className="h-16">
+                <rect x="2" y="2" width="496" height="96" fill="none" stroke="#0F2346" strokeWidth="4" rx="8" />
+                <text
+                  x="250"
+                  y="55"
+                  fill="#0F2346"
+                  fontFamily="Inter, Noto Sans JP, sans-serif"
+                  fontSize="40"
+                  fontWeight="700"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  textLength="460"
+                  lengthAdjust="spacingAndGlyphs"
+                >
+                  NO-SMOKE ALERT Osaka
+                </text>
+              </svg>
+              <div>
+                <p className="text-sm text-gray-600">
+                  大阪府の迷惑タバコ報告システム
+                </p>
               </div>
+            </div>
+            <div className="text-sm text-gray-500">
+              v1.2.0
             </div>
           </div>
         </div>
@@ -120,7 +127,7 @@ export default function Home() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-sm text-gray-500">
-            <p>© 2025 No-Smoke Walk Osaka. 大阪府路上喫煙対策の一環として運営されています。</p>
+            <p>© 2025 NO-SMOKE ALERT Osaka. 大阪府路上喫煙対策の一環として運営されています。</p>
           </div>
         </div>
       </footer>
