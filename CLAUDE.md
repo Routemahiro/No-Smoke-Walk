@@ -389,7 +389,23 @@ npm run lint
 - 2025-06-30 Playwright MCP E2Eテスト完了（投稿成功メッセージ・ヒートマップリアルタイム更新確認）
 - 2025-06-30 🎉 **No-Smoke Walk Osaka 完全動作確認完了** 🎉
 
-## 現在の状況（2025-06-30最終更新）
+**2025-07-03 相対密度ヒートマップ機能実装完了**
+- 2025-07-03 backend/simple-server.js 1ヶ月時間フィルター実装（30日以内データのみ対象）
+- 2025-07-03 backend/simple-server.js 75mグリッド集約機能実装（50-100m範囲でのクラスタリング）
+- 2025-07-03 backend/simple-server.js 800m参照範囲での相対密度計算実装（Haversine距離計算）
+- 2025-07-03 backend/simple-server.js 5分間TTLキャッシュシステム実装（パフォーマンス最適化）
+- 2025-07-03 frontend/src/components/HeatmapView.tsx 密度比率に基づく動的色設定実装
+- 2025-07-03 frontend/src/components/MiniHeatmap.tsx 色設定統一・相対密度対応
+- 2025-07-03 frontend/src/hooks/useHeatmap.ts ユーザー位置情報パラメータ追加
+- 2025-07-03 相対密度動作確認完了：高密度62.5%・中密度37.5%・範囲外0%の正確な計算
+
+**2025-07-03 UX改善：最小報告数フィルター削除**
+- 2025-07-03 frontend/src/components/HeatmapView.tsx 最小報告数フィルター削除（UX改善）
+- 2025-07-03 FilterStateインターフェースからminReports削除・固定値1に設定
+- 2025-07-03 ヒートマップUIの簡素化完了（カテゴリ・期間・現在位置・更新のみ）
+- 2025-07-03 Next.jsキャッシュ対策手順確立（サーバー再起動・ハードリフレッシュ）
+
+## 現在の状況（2025-07-03最終更新）
 
 ### ✅ 完全動作確認済み機能
 1. **フロントエンドUI投稿機能** - 位置情報取得・カテゴリ選択・投稿成功
