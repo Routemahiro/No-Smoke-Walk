@@ -34,12 +34,16 @@ export const apiClient = {
     category?: string;
     days?: number;
     min_reports?: number;
+    userLat?: number;
+    userLon?: number;
   }) {
     const searchParams = new URLSearchParams();
     
     if (params?.category) searchParams.set('category', params.category);
     if (params?.days) searchParams.set('days', params.days.toString());
     if (params?.min_reports) searchParams.set('min_reports', params.min_reports.toString());
+    if (params?.userLat) searchParams.set('userLat', params.userLat.toString());
+    if (params?.userLon) searchParams.set('userLon', params.userLon.toString());
     
     const url = `${this.baseUrl}/api/heatmap${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
     

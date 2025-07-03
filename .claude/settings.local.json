@@ -57,7 +57,8 @@
       "Bash(timeout:*)",
       "Bash(wrangler dev:*)",
       "Bash(npx wrangler dev:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "mcp__playwright__browser_select_option"
     ],
     "deny": []
   },

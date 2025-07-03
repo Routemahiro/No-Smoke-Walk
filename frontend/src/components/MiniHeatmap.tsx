@@ -24,7 +24,8 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap({
     category: undefined,
     minReports: 1,
-    days: 30
+    days: 30,
+    userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
   });
 
   // Debug logging
@@ -273,11 +274,27 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
             source: 'reports',
             paint: {
               'heatmap-weight': [
-                'interpolate',
-                ['linear'],
-                ['get', 'count'],
-                1, 0.5,
-                10, 1
+                'case',
+                ['>', ['get', 'densityRatio'], 0],
+                // Use density ratio (0-100%) for weight
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['get', 'densityRatio'],
+                  0, 0.1,
+                  5, 0.3,   // Low density (1-5%)
+                  15, 0.7,  // Medium density (5-15%)
+                  100, 1    // High density (15%+)
+                ],
+                // Fallback to count-based weight
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['get', 'count'],
+                  1, 0.3,
+                  5, 0.7,
+                  10, 1
+                ]
               ],
               'heatmap-intensity': [
                 'interpolate',
@@ -290,12 +307,13 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
                 'interpolate',
                 ['linear'],
                 ['heatmap-density'],
-                0, 'rgba(0, 0, 255, 0)',
-                0.2, 'rgb(65, 105, 225)',
-                0.4, 'rgb(0, 255, 255)',
-                0.6, 'rgb(0, 255, 0)',
-                0.8, 'rgb(255, 255, 0)',
-                1, 'rgb(255, 0, 0)'
+                0, 'rgba(255,255,255,0)',     // Transparent
+                0.1, 'rgba(255,255,178,0.2)', // Very light yellow (low density)
+                0.3, 'rgba(254,204,92,0.4)',  // Light orange (low-medium density)
+                0.5, 'rgba(253,141,60,0.6)',  // Orange (medium density)
+                0.7, 'rgba(240,59,32,0.8)',   // Red (high density)
+                0.9, 'rgba(189,0,38,0.9)',    // Dark red (very high density)
+                1, 'rgba(139,0,0,1)'          // Deep red (maximum density)
               ],
               'heatmap-radius': [
                 'interpolate',
@@ -321,12 +339,27 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
                 10, 12
               ],
               'circle-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'count'],
-                1, '#fbbf24',
-                5, '#f59e0b',
-                10, '#dc2626'
+                'case',
+                ['>', ['get', 'densityRatio'], 0],
+                // Color based on density ratio
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['get', 'densityRatio'],
+                  0, '#FEF3C7',    // Light yellow (0-1%)
+                  5, '#F59E0B',    // Orange (1-5% - low density)
+                  15, '#DC2626',   // Red (5-15% - medium density)
+                  100, '#7F1D1D'   // Dark red (15%+ - high density)
+                ],
+                // Fallback to count-based colors
+                [
+                  'interpolate',
+                  ['linear'],
+                  ['get', 'count'],
+                  1, '#fbbf24',
+                  5, '#f59e0b',
+                  10, '#dc2626'
+                ]
               ],
               'circle-stroke-color': 'white',
               'circle-stroke-width': 1,

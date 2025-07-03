@@ -31,8 +31,15 @@ export function HeatmapView() {
     minReports: 3,
   });
 
-  const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(filters);
   const { location: userLocation, getCurrentLocation } = useGeolocation();
+  
+  // Include user location in heatmap filters
+  const heatmapFilters = {
+    ...filters,
+    userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
+  };
+  
+  const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(heatmapFilters);
 
   // Load MapLibre GL dynamically
   useEffect(() => {
@@ -149,13 +156,29 @@ export function HeatmapView() {
       source: 'heatmap-data',
       maxzoom: 15,
       paint: {
-        // Increase weight as count increases
+        // Use density ratio for weight if available, otherwise use count
         'heatmap-weight': [
-          'interpolate',
-          ['linear'],
-          ['get', 'count'],
-          1, 0.1,
-          10, 1
+          'case',
+          ['>', ['get', 'densityRatio'], 0],
+          // Use density ratio (0-100%) for weight
+          [
+            'interpolate',
+            ['linear'],
+            ['get', 'densityRatio'],
+            0, 0.1,
+            5, 0.3,   // Low density (1-5%)
+            15, 0.7,  // Medium density (5-15%)
+            100, 1    // High density (15%+)
+          ],
+          // Fallback to count-based weight
+          [
+            'interpolate',
+            ['linear'],
+            ['get', 'count'],
+            1, 0.3,
+            5, 0.7,
+            10, 1
+          ]
         ],
         // Increase intensity as zoom level increases
         'heatmap-intensity': [
@@ -165,17 +188,18 @@ export function HeatmapView() {
           0, 1,
           15, 3
         ],
-        // Color ramp for heatmap - red for hot spots
+        // Enhanced color ramp for better density visualization
         'heatmap-color': [
           'interpolate',
           ['linear'],
           ['heatmap-density'],
-          0, 'rgba(255,255,255,0)',
-          0.2, 'rgb(255,255,178)',
-          0.4, 'rgb(254,204,92)',
-          0.6, 'rgb(253,141,60)',
-          0.8, 'rgb(240,59,32)',
-          1, 'rgb(189,0,38)'
+          0, 'rgba(255,255,255,0)',     // Transparent
+          0.1, 'rgba(255,255,178,0.2)', // Very light yellow (low density)
+          0.3, 'rgba(254,204,92,0.4)',  // Light orange (low-medium density)
+          0.5, 'rgba(253,141,60,0.6)',  // Orange (medium density)
+          0.7, 'rgba(240,59,32,0.8)',   // Red (high density)
+          0.9, 'rgba(189,0,38,0.9)',    // Dark red (very high density)
+          1, 'rgba(139,0,0,1)'          // Deep red (maximum density)
         ],
         // Adjust radius based on zoom level
         'heatmap-radius': [
@@ -213,9 +237,24 @@ export function HeatmapView() {
         ],
         'circle-color': [
           'case',
-          ['==', ['get', 'category'], 'walk_smoke'], CATEGORY_COLORS.walk_smoke,
-          ['==', ['get', 'category'], 'stand_smoke'], CATEGORY_COLORS.stand_smoke,
-          '#666666'
+          ['>', ['get', 'densityRatio'], 0],
+          // Color based on density ratio
+          [
+            'interpolate',
+            ['linear'],
+            ['get', 'densityRatio'],
+            0, '#FEF3C7',    // Light yellow (0-1%)
+            5, '#F59E0B',    // Orange (1-5% - low density)
+            15, '#DC2626',   // Red (5-15% - medium density)
+            100, '#7F1D1D'   // Dark red (15%+ - high density)
+          ],
+          // Fallback to category colors
+          [
+            'case',
+            ['==', ['get', 'category'], 'walk_smoke'], CATEGORY_COLORS.walk_smoke,
+            ['==', ['get', 'category'], 'stand_smoke'], CATEGORY_COLORS.stand_smoke,
+            '#666666'
+          ]
         ],
         'circle-opacity': 0.7,
         'circle-stroke-width': 2,
@@ -236,6 +275,7 @@ export function HeatmapView() {
               <h3 class="font-semibold">報告ホットスポット</h3>
               <p class="text-sm">報告数: ${properties.count}件</p>
               ${properties.category ? `<p class="text-sm">カテゴリ: ${getCategoryLabel(properties.category)}</p>` : ''}
+              ${properties.densityRatio > 0 ? `<p class="text-sm">密度: 周辺の${properties.densityRatio}%</p>` : ''}
             </div>
           `)
           .addTo(map.current!);

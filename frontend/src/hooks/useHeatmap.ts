@@ -15,6 +15,10 @@ interface HeatmapFilters {
   category?: 'walk_smoke' | 'stand_smoke';
   days?: number;
   minReports?: number;
+  userLocation?: {
+    lat: number;
+    lon: number;
+  };
 }
 
 export function useHeatmap(filters: HeatmapFilters = {}) {
@@ -34,7 +38,9 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
       const params = {
         category: mergedFilters.category,
         days: mergedFilters.days,
-        min_reports: mergedFilters.minReports
+        min_reports: mergedFilters.minReports,
+        userLat: mergedFilters.userLocation?.lat,
+        userLon: mergedFilters.userLocation?.lon
       };
       
       console.log('🌍 Fetching heatmap data with params:', params);

@@ -5,6 +5,43 @@ const crypto = require('crypto');
 
 const port = 8787;
 
+// Simple cache for heatmap data (5-minute TTL)
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+function getCacheKey(userLat, userLon) {
+  // Round coordinates to reduce cache keys
+  const roundedLat = userLat ? Math.round(parseFloat(userLat) * 1000) / 1000 : 'null';
+  const roundedLon = userLon ? Math.round(parseFloat(userLon) * 1000) / 1000 : 'null';
+  return `heatmap_${roundedLat}_${roundedLon}`;
+}
+
+function getCachedData(cacheKey) {
+  const cached = cache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    return cached.data;
+  }
+  cache.delete(cacheKey); // Remove expired entry
+  return null;
+}
+
+function setCachedData(cacheKey, data) {
+  cache.set(cacheKey, {
+    data: data,
+    timestamp: Date.now()
+  });
+  
+  // Clean up old cache entries periodically
+  if (cache.size > 100) {
+    const now = Date.now();
+    for (const [key, value] of cache.entries()) {
+      if (now - value.timestamp >= CACHE_TTL) {
+        cache.delete(key);
+      }
+    }
+  }
+}
+
 // Supabase client - Use HTTP API instead of SDK for reliability
 const supabaseUrl = 'https://qdqcocgoaxzbhvvmvttr.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY0NzMsImV4cCI6MjA2NjgwMjQ3M30.3sr3dXq7GOz8yLcKn602Ba8Ej-X1zIpCn-T_BxM5Ofk'; // anon key
@@ -32,6 +69,116 @@ async function supabaseRequest(endpoint, method = 'GET', body = null) {
   }
   
   return response.json();
+}
+
+// Distance calculation helper (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Earth's radius in meters
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in meters
+}
+
+// Grid aggregation and relative density calculation
+async function processHeatmapData(reports, userLat, userLon) {
+  if (!reports || reports.length === 0) {
+    return [];
+  }
+
+  // Convert user coordinates to numbers if provided
+  const centerLat = userLat ? parseFloat(userLat) : null;
+  const centerLon = userLon ? parseFloat(userLon) : null;
+
+  // Step 1: Grid aggregation (50-100m clustering)
+  const gridSize = 75; // 75m as middle point between 50-100m
+  const clusters = new Map();
+
+  reports.forEach(report => {
+    const lat = parseFloat(report.lat);
+    const lon = parseFloat(report.lon);
+    
+    // Create grid key based on rounded coordinates
+    const gridLat = Math.round(lat * 10000) / 10000; // ~11m precision
+    const gridLon = Math.round(lon * 10000) / 10000; // ~11m precision
+    const gridKey = `${gridLat},${gridLon}`;
+    
+    if (!clusters.has(gridKey)) {
+      clusters.set(gridKey, {
+        lat: gridLat,
+        lon: gridLon,
+        count: 0,
+        categories: {}
+      });
+    }
+    
+    const cluster = clusters.get(gridKey);
+    cluster.count++;
+    cluster.categories[report.category] = (cluster.categories[report.category] || 0) + 1;
+  });
+
+  // Step 2: Calculate relative density if user location is provided
+  let totalReportsInRange = 0;
+  const referenceRadius = 800; // 800m reference range
+
+  if (centerLat && centerLon) {
+    // Count reports within 800m of user location
+    reports.forEach(report => {
+      const distance = calculateDistance(
+        centerLat, centerLon,
+        parseFloat(report.lat), parseFloat(report.lon)
+      );
+      if (distance <= referenceRadius) {
+        totalReportsInRange++;
+      }
+    });
+  }
+
+  // Step 3: Convert clusters to GeoJSON features with density ratios
+  const features = Array.from(clusters.values()).map(cluster => {
+    let densityRatio = 0;
+    
+    if (totalReportsInRange > 0 && centerLat && centerLon) {
+      // Calculate if this cluster is within reference range
+      const clusterDistance = calculateDistance(
+        centerLat, centerLon,
+        cluster.lat, cluster.lon
+      );
+      
+      if (clusterDistance <= referenceRadius) {
+        densityRatio = (cluster.count / totalReportsInRange) * 100;
+      }
+    }
+
+    // Determine primary category
+    const primaryCategory = Object.keys(cluster.categories).reduce((a, b) => 
+      cluster.categories[a] > cluster.categories[b] ? a : b
+    );
+
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [cluster.lon, cluster.lat]
+      },
+      properties: {
+        count: cluster.count,
+        category: primaryCategory,
+        densityRatio: Math.round(densityRatio * 100) / 100, // Round to 2 decimal places
+        categories: cluster.categories
+      }
+    };
+  });
+
+  console.log(`Grid aggregation: ${reports.length} reports → ${features.length} clusters`);
+  if (centerLat && centerLon) {
+    console.log(`Reference area: ${totalReportsInRange} reports within ${referenceRadius}m`);
+  }
+
+  return features;
 }
 
 // Sample heatmap data
@@ -109,31 +256,42 @@ const server = http.createServer(async (req, res) => {
     console.log('Serving heatmap data with params:', parsedUrl.query);
     
     try {
-      // Get real data from Supabase HTTP API
-      const reports = await supabaseRequest('reports?select=lat,lon,category&order=reported_at.desc&limit=1000');
+      const { userLat, userLon } = parsedUrl.query;
+      const cacheKey = getCacheKey(userLat, userLon);
       
-      // Convert to GeoJSON format
-      const features = reports.map(report => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [parseFloat(report.lon), parseFloat(report.lat)]
-        },
-        properties: {
-          count: 1,
-          category: report.category
-        }
-      }));
+      // Check cache first
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData) {
+        console.log(`Serving cached heatmap data for key: ${cacheKey}`);
+        res.writeHead(200);
+        res.end(JSON.stringify(cachedData));
+        return;
+      }
+      
+      // Get real data from Supabase HTTP API with 1-month time filter
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+      const timeFilter = oneMonthAgo.toISOString();
+      
+      const reports = await supabaseRequest(`reports?select=lat,lon,category&reported_at=gte.${timeFilter}&order=reported_at.desc&limit=1000`);
+      
+      console.log(`Retrieved ${reports.length} reports from last 30 days`);
+      
+      // Grid aggregation and density calculation
+      const aggregatedFeatures = await processHeatmapData(reports, userLat, userLon);
       
       const realHeatmapData = {
         success: true,
         data: {
           type: 'FeatureCollection',
-          features: features
+          features: aggregatedFeatures
         }
       };
       
-      console.log(`Serving ${features.length} real heatmap features`);
+      // Cache the result
+      setCachedData(cacheKey, realHeatmapData);
+      
+      console.log(`Serving ${aggregatedFeatures.length} aggregated heatmap features (last 30 days, cached)`);
       res.writeHead(200);
       res.end(JSON.stringify(realHeatmapData));
       
