@@ -4,7 +4,7 @@ import { useHeatmap } from '@/hooks/useHeatmap';
 import { useGeolocation } from '@/hooks/useGeolocation';
 
 export function DebugStatus() {
-  const { data: heatmapData, loading, error } = useHeatmap({
+  const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap({
     category: undefined,
     minReports: 1,
     days: 30
@@ -31,6 +31,7 @@ export function DebugStatus() {
         {address && (
           <div>Addr: {address.substring(0, 30)}...</div>
         )}
+        <div>Fallback: {isUsingFallbackData ? '📡' : '🔗'}</div>
       </div>
     </div>
   );

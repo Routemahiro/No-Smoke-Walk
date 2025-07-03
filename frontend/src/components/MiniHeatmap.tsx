@@ -21,7 +21,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   const [maplibregl, setMaplibregl] = useState<any>(null);
   const [isMapFullyReady, setIsMapFullyReady] = useState(false);
   
-  const { data: heatmapData, loading, error } = useHeatmap({
+  const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap({
     category: undefined,
     minReports: 1,
     days: 30
@@ -446,7 +446,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
           <p>🔴 赤いエリアは報告が多い要注意地域です</p>
           <p>📍 青い点があなたの現在位置です</p>
           <p>👆 タップして詳細マップで確認できます</p>
-          {heatmapData && !error && (
+          {isUsingFallbackData && (
             <p className="text-blue-600">📡 デモデータを表示中</p>
           )}
         </div>

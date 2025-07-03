@@ -8,6 +8,7 @@ interface HeatmapState {
   data: HeatmapData | null;
   loading: boolean;
   error: string | null;
+  isUsingFallbackData: boolean;
 }
 
 interface HeatmapFilters {
@@ -21,6 +22,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
     data: null,
     loading: false,
     error: null,
+    isUsingFallbackData: false,
   });
 
   const fetchHeatmapData = async (customFilters?: HeatmapFilters) => {
@@ -45,6 +47,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
           ...prev,
           data: response.data,
           loading: false,
+          isUsingFallbackData: false,
         }));
       } else {
         console.error('🌍 Heatmap API error:', response.error);
@@ -102,7 +105,8 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
           ...prev,
           data: fallbackData,
           loading: false,
-          error: null // Clear error when using fallback
+          error: null, // Clear error when using fallback
+          isUsingFallbackData: true,
         }));
         return;
       }
@@ -116,6 +120,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
         ...prev,
         error: errorMessage,
         loading: false,
+        isUsingFallbackData: false,
       }));
     }
   };
