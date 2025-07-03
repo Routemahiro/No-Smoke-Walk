@@ -18,7 +18,6 @@ const CATEGORY_COLORS = {
 interface FilterState {
   category?: ReportCategory;
   days: number;
-  minReports: number;
 }
 
 export function HeatmapView() {
@@ -28,7 +27,6 @@ export function HeatmapView() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     days: 30,
-    minReports: 3,
   });
 
   const { location: userLocation, getCurrentLocation } = useGeolocation();
@@ -36,6 +34,7 @@ export function HeatmapView() {
   // Include user location in heatmap filters
   const heatmapFilters = {
     ...filters,
+    minReports: 1, // Fixed to show all reports
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
   };
   
@@ -263,7 +262,7 @@ export function HeatmapView() {
     });
 
     // Add popup on click
-    map.current.on('click', 'heatmap-points', (e) => {
+    map.current.on('click', 'heatmap-points', (e: any) => {
       const coordinates = e.lngLat;
       const properties = e.features?.[0]?.properties;
       
@@ -410,20 +409,6 @@ export function HeatmapView() {
               </select>
             </div>
 
-            {/* Min Reports Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm">最小報告数:</span>
-              <select
-                value={filters.minReports}
-                onChange={(e) => handleFilterChange({ minReports: parseInt(e.target.value) })}
-                className="px-3 py-1 border rounded-md text-sm"
-              >
-                <option value={1}>1件以上</option>
-                <option value={3}>3件以上</option>
-                <option value={5}>5件以上</option>
-                <option value={10}>10件以上</option>
-              </select>
-            </div>
 
             {/* User Location Button */}
             <Button
