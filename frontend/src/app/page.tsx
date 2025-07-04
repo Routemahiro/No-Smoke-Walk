@@ -73,7 +73,7 @@ export default function Home() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-lg font-semibold mb-4">
-                📋 このサービスについて
+                このサービスについて
               </h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
@@ -89,7 +89,7 @@ export default function Home() {
 
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h3 className="text-lg font-semibold mb-4">
-                🎯 報告対象
+                報告対象
               </h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -111,7 +111,7 @@ export default function Home() {
 
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h3 className="text-lg font-semibold mb-4">
-                🔒 プライバシー保護
+                プライバシー保護
               </h3>
               <div className="space-y-2 text-sm text-gray-600">
                 <p>• 位置情報は報告処理のためのみ使用され、精度は約200m以内です</p>

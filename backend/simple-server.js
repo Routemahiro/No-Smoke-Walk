@@ -334,21 +334,50 @@ const server = http.createServer(async (req, res) => {
         
         console.log('Generated hashes:', { ipHash: ipHash.length, fpHash: fpHash.length });
         
-        // Determine city based on coordinates (simple logic for Osaka area)
+        // Parse address information from frontend
+        let prefecture = '大阪府'; // default
         let city = '大阪市中央区'; // default
-        if (reportData.lat >= 34.76 && reportData.lat <= 34.78) {
-          city = '吹田市';
-        } else if (reportData.lat >= 34.69 && reportData.lat <= 34.71) {
-          city = '大阪市北区';
-        } else if (reportData.lat >= 34.66 && reportData.lat <= 34.68) {
-          city = '大阪市中央区';
+        
+        if (reportData.address) {
+          console.log('Processing address:', reportData.address);
+          
+          // Parse address components
+          const addressParts = reportData.address.split(',').map(part => part.trim());
+          
+          // Extract prefecture (都道府県)
+          const prefectureMatch = addressParts.find(part => 
+            part.includes('府') || part.includes('県') || part.includes('都') || part.includes('道')
+          );
+          if (prefectureMatch) {
+            prefecture = prefectureMatch;
+          }
+          
+          // Extract city (市区町村)
+          const cityMatch = addressParts.find(part => 
+            part.includes('市') || part.includes('区') || part.includes('町') || part.includes('村')
+          );
+          if (cityMatch) {
+            city = cityMatch;
+          }
+          
+          console.log('Parsed address:', { prefecture, city });
+        } else {
+          console.log('No address provided, using coordinate-based fallback');
+          // Fallback to coordinate-based logic for backward compatibility
+          if (reportData.lat >= 34.76 && reportData.lat <= 34.78) {
+            city = '吹田市';
+          } else if (reportData.lat >= 34.69 && reportData.lat <= 34.71) {
+            city = '大阪市北区';
+          } else if (reportData.lat >= 34.66 && reportData.lat <= 34.68) {
+            city = '大阪市中央区';
+          }
         }
         
         // Insert into Supabase using HTTP API
         const data = await supabaseRequest('reports', 'POST', {
           lat: reportData.lat,
           lon: reportData.lon,
-          prefecture: '大阪府',
+          prefecture: prefecture,
           city: city,
           category: reportData.category,
           ip_hash: ipHash,

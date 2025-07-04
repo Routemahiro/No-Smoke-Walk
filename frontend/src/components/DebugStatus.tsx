@@ -10,7 +10,7 @@ export function DebugStatus() {
     days: 30
   });
   
-  const { location, address, addressLoading } = useGeolocation();
+  const { location } = useGeolocation();
 
   return (
     <div className="fixed bottom-4 right-4 bg-black text-white p-3 rounded-lg text-xs max-w-sm z-50">
@@ -19,7 +19,6 @@ export function DebugStatus() {
       <div className="space-y-1">
         <div>Heatmap: {loading ? '🔄' : heatmapData ? '✅' : error ? '❌' : '⏳'}</div>
         <div>Location: {location ? '📍' : '❌'}</div>
-        <div>Address: {addressLoading ? '🔄' : address ? '✅' : '❌'}</div>
         
         {error && <div className="text-red-300">Error: {error}</div>}
         {heatmapData && (
@@ -27,9 +26,6 @@ export function DebugStatus() {
         )}
         {location && (
           <div>Coords: {location.lat.toFixed(4)}, {location.lon.toFixed(4)}</div>
-        )}
-        {address && (
-          <div>Addr: {address.substring(0, 30)}...</div>
         )}
         <div>Fallback: {isUsingFallbackData ? '📡' : '🔗'}</div>
       </div>

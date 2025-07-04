@@ -96,6 +96,13 @@ export function HeatmapView() {
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     map.current.on('load', () => {
+      console.log('Map loaded event fired');
+      setMapLoaded(true);
+    });
+
+    // Also listen for when the map is completely ready
+    map.current.on('idle', () => {
+      console.log('Map idle event fired - fully ready');
       setMapLoaded(true);
     });
 
@@ -130,166 +137,209 @@ export function HeatmapView() {
   useEffect(() => {
     if (!map.current || !mapLoaded || !heatmapData) return;
 
-    // Remove existing layers that use the heatmap-data source
-    if (map.current.getLayer('heatmap-layer')) {
-      map.current.removeLayer('heatmap-layer');
-    }
-    if (map.current.getLayer('heatmap-points')) {
-      map.current.removeLayer('heatmap-points');
-    }
-    // Remove source only after all layers using it are removed
-    if (map.current.getSource('heatmap-data')) {
-      map.current.removeSource('heatmap-data');
-    }
+    let retryCount = 0;
+    const maxRetries = 10; // 最大10回まで（2秒間）
 
-    // Add new heatmap data
-    map.current.addSource('heatmap-data', {
-      type: 'geojson',
-      data: heatmapData
-    });
+    // Function to add heatmap data safely
+    const addHeatmapData = () => {
+      try {
+        // Check if style is ready and map is loaded
+        if (!map.current?.isStyleLoaded() || !map.current.loaded()) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Style loading retry ${retryCount}/${maxRetries} for heatmap data...`);
+            setTimeout(() => addHeatmapData(), 200);
+            return;
+          } else {
+            console.error('Failed to load heatmap data after maximum retries');
+            return;
+          }
+        }
 
-    // Add heatmap layer
-    map.current.addLayer({
-      id: 'heatmap-layer',
-      type: 'heatmap',
-      source: 'heatmap-data',
-      maxzoom: 15,
-      paint: {
-        // Use density ratio for weight if available, otherwise use count
-        'heatmap-weight': [
-          'case',
-          ['>', ['get', 'densityRatio'], 0],
-          // Use density ratio (0-100%) for weight
-          [
-            'interpolate',
-            ['linear'],
-            ['get', 'densityRatio'],
-            0, 0.1,
-            5, 0.3,   // Low density (1-5%)
-            15, 0.7,  // Medium density (5-15%)
-            100, 1    // High density (15%+)
-          ],
-          // Fallback to count-based weight
-          [
-            'interpolate',
-            ['linear'],
-            ['get', 'count'],
-            1, 0.3,
-            5, 0.7,
-            10, 1
-          ]
-        ],
-        // Increase intensity as zoom level increases
-        'heatmap-intensity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          0, 1,
-          15, 3
-        ],
-        // Enhanced color ramp for better density visualization
-        'heatmap-color': [
-          'interpolate',
-          ['linear'],
-          ['heatmap-density'],
-          0, 'rgba(255,255,255,0)',     // Transparent
-          0.1, 'rgba(255,255,178,0.2)', // Very light yellow (low density)
-          0.3, 'rgba(254,204,92,0.4)',  // Light orange (low-medium density)
-          0.5, 'rgba(253,141,60,0.6)',  // Orange (medium density)
-          0.7, 'rgba(240,59,32,0.8)',   // Red (high density)
-          0.9, 'rgba(189,0,38,0.9)',    // Dark red (very high density)
-          1, 'rgba(139,0,0,1)'          // Deep red (maximum density)
-        ],
-        // Adjust radius based on zoom level
-        'heatmap-radius': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          0, 2,
-          15, 20
-        ],
-        // Opacity based on zoom level
-        'heatmap-opacity': [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          10, 1,
-          15, 0.3
-        ]
+        // Remove existing layers that use the heatmap-data source
+        if (map.current.getLayer('heatmap-layer')) {
+          map.current.removeLayer('heatmap-layer');
+        }
+        if (map.current.getLayer('heatmap-points')) {
+          map.current.removeLayer('heatmap-points');
+        }
+        // Remove source only after all layers using it are removed
+        if (map.current.getSource('heatmap-data')) {
+          map.current.removeSource('heatmap-data');
+        }
+
+        // Add new heatmap data
+        map.current.addSource('heatmap-data', {
+          type: 'geojson',
+          data: heatmapData
+        });
+
+        // Add heatmap layer
+        map.current.addLayer({
+          id: 'heatmap-layer',
+          type: 'heatmap',
+          source: 'heatmap-data',
+          maxzoom: 15,
+          paint: {
+            // Use density ratio for weight if available, otherwise use count
+            'heatmap-weight': [
+              'case',
+              ['>', ['get', 'densityRatio'], 0],
+              // Use density ratio (0-100%) for weight
+              [
+                'interpolate',
+                ['linear'],
+                ['get', 'densityRatio'],
+                0, 0.1,
+                5, 0.3,   // Low density (1-5%)
+                15, 0.7,  // Medium density (5-15%)
+                100, 1    // High density (15%+)
+              ],
+              // Fallback to count-based weight
+              [
+                'interpolate',
+                ['linear'],
+                ['get', 'count'],
+                1, 0.3,
+                5, 0.7,
+                10, 1
+              ]
+            ],
+            // Increase intensity as zoom level increases
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 1,
+              15, 3
+            ],
+            // Enhanced color ramp for better density visualization
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0, 'rgba(255,255,255,0)',     // Transparent
+              0.1, 'rgba(255,255,178,0.2)', // Very light yellow (low density)
+              0.3, 'rgba(254,204,92,0.4)',  // Light orange (low-medium density)
+              0.5, 'rgba(253,141,60,0.6)',  // Orange (medium density)
+              0.7, 'rgba(240,59,32,0.8)',   // Red (high density)
+              0.9, 'rgba(189,0,38,0.9)',    // Dark red (very high density)
+              1, 'rgba(139,0,0,1)'          // Deep red (maximum density)
+            ],
+            // Adjust radius based on zoom level
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 2,
+              15, 20
+            ],
+            // Opacity based on zoom level
+            'heatmap-opacity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              10, 1,
+              15, 0.3
+            ]
+          }
+        });
+
+        // Add circle layer for high zoom levels
+        map.current.addLayer({
+          id: 'heatmap-points',
+          type: 'circle',
+          source: 'heatmap-data',
+          minzoom: 13,
+          paint: {
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['get', 'count'],
+              1, 4,
+              10, 12,
+              20, 20
+            ],
+            'circle-color': [
+              'case',
+              ['>', ['get', 'densityRatio'], 0],
+              // Color based on density ratio
+              [
+                'interpolate',
+                ['linear'],
+                ['get', 'densityRatio'],
+                0, '#FEF3C7',    // Light yellow (0-1%)
+                5, '#F59E0B',    // Orange (1-5% - low density)
+                15, '#DC2626',   // Red (5-15% - medium density)
+                100, '#7F1D1D'   // Dark red (15%+ - high density)
+              ],
+              // Fallback to category colors
+              [
+                'case',
+                ['==', ['get', 'category'], 'walk_smoke'], CATEGORY_COLORS.walk_smoke,
+                ['==', ['get', 'category'], 'stand_smoke'], CATEGORY_COLORS.stand_smoke,
+                '#666666'
+              ]
+            ],
+            'circle-opacity': 0.7,
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff'
+          }
+        });
+
+        // Add popup on click
+        map.current.on('click', 'heatmap-points', (e: any) => {
+          const coordinates = e.lngLat;
+          const properties = e.features?.[0]?.properties;
+          
+          if (properties && maplibregl) {
+            new maplibregl.Popup()
+              .setLngLat(coordinates)
+              .setHTML(`
+                <div class="p-2">
+                  <h3 class="font-semibold">報告ホットスポット</h3>
+                  <p class="text-sm">報告数: ${properties.count}件</p>
+                  ${properties.category ? `<p class="text-sm">カテゴリ: ${getCategoryLabel(properties.category)}</p>` : ''}
+                  ${properties.densityRatio > 0 ? `<p class="text-sm">密度: 周辺の${properties.densityRatio}%</p>` : ''}
+                </div>
+              `)
+              .addTo(map.current!);
+          }
+        });
+
+        // Change cursor on hover
+        map.current.on('mouseenter', 'heatmap-points', () => {
+          map.current!.getCanvas().style.cursor = 'pointer';
+        });
+
+        map.current.on('mouseleave', 'heatmap-points', () => {
+          map.current!.getCanvas().style.cursor = '';
+        });
+
+        console.log('Heatmap data and layers added successfully');
+
+      } catch (error) {
+        console.error('Error adding heatmap data:', error);
+        // If it's a style loading error, retry after a delay (with limit)
+        if (error instanceof Error && error.message.includes('Style is not done loading') && retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Style loading error retry ${retryCount}/${maxRetries}...`);
+          setTimeout(() => addHeatmapData(), 500);
+        } else {
+          console.error('Failed to add heatmap data:', error);
+        }
       }
-    });
+    };
 
-    // Add circle layer for high zoom levels
-    map.current.addLayer({
-      id: 'heatmap-points',
-      type: 'circle',
-      source: 'heatmap-data',
-      minzoom: 13,
-      paint: {
-        'circle-radius': [
-          'interpolate',
-          ['linear'],
-          ['get', 'count'],
-          1, 4,
-          10, 12,
-          20, 20
-        ],
-        'circle-color': [
-          'case',
-          ['>', ['get', 'densityRatio'], 0],
-          // Color based on density ratio
-          [
-            'interpolate',
-            ['linear'],
-            ['get', 'densityRatio'],
-            0, '#FEF3C7',    // Light yellow (0-1%)
-            5, '#F59E0B',    // Orange (1-5% - low density)
-            15, '#DC2626',   // Red (5-15% - medium density)
-            100, '#7F1D1D'   // Dark red (15%+ - high density)
-          ],
-          // Fallback to category colors
-          [
-            'case',
-            ['==', ['get', 'category'], 'walk_smoke'], CATEGORY_COLORS.walk_smoke,
-            ['==', ['get', 'category'], 'stand_smoke'], CATEGORY_COLORS.stand_smoke,
-            '#666666'
-          ]
-        ],
-        'circle-opacity': 0.7,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    });
+    // Only try once initially - no additional event listeners to prevent loops
+    const timeoutId = setTimeout(() => {
+      addHeatmapData();
+    }, 300); // Slightly longer delay for more reliable style loading
 
-    // Add popup on click
-    map.current.on('click', 'heatmap-points', (e: any) => {
-      const coordinates = e.lngLat;
-      const properties = e.features?.[0]?.properties;
-      
-      if (properties && maplibregl) {
-        new maplibregl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(`
-            <div class="p-2">
-              <h3 class="font-semibold">報告ホットスポット</h3>
-              <p class="text-sm">報告数: ${properties.count}件</p>
-              ${properties.category ? `<p class="text-sm">カテゴリ: ${getCategoryLabel(properties.category)}</p>` : ''}
-              ${properties.densityRatio > 0 ? `<p class="text-sm">密度: 周辺の${properties.densityRatio}%</p>` : ''}
-            </div>
-          `)
-          .addTo(map.current!);
-      }
-    });
-
-    // Change cursor on hover
-    map.current.on('mouseenter', 'heatmap-points', () => {
-      map.current!.getCanvas().style.cursor = 'pointer';
-    });
-
-    map.current.on('mouseleave', 'heatmap-points', () => {
-      map.current!.getCanvas().style.cursor = '';
-    });
-
+    // Cleanup
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [mapLoaded, heatmapData]);
 
   // Add user location marker
@@ -301,47 +351,84 @@ export function HeatmapView() {
 
     console.log('Adding user location to HeatmapView:', userLocation);
 
-    try {
-      // Remove existing user location if it exists
-      if (map.current.getLayer('user-location')) {
-        map.current.removeLayer('user-location');
-      }
-      if (map.current.getSource('user-location')) {
-        map.current.removeSource('user-location');
-      }
+    let retryCount = 0;
+    const maxRetries = 10; // 最大10回まで（2秒間）
 
-      // Add user location source
-      map.current.addSource('user-location', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [userLocation.lon, userLocation.lat]
-          },
-          properties: {}
+    // Function to add user location safely
+    const addUserLocation = () => {
+      try {
+        // Check if style is ready and map is loaded
+        if (!map.current?.isStyleLoaded() || !map.current.loaded()) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Style loading retry ${retryCount}/${maxRetries} for user location...`);
+            setTimeout(() => addUserLocation(), 200);
+            return;
+          } else {
+            console.error('Failed to add user location after maximum retries');
+            return;
+          }
         }
-      });
 
-      // Add user location layer
-      map.current.addLayer({
-        id: 'user-location',
-        type: 'circle',
-        source: 'user-location',
-        paint: {
-          'circle-radius': 12,
-          'circle-color': '#3b82f6',
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-width': 3,
-          'circle-opacity': 1
+        // Remove existing user location if it exists
+        if (map.current.getLayer('user-location')) {
+          map.current.removeLayer('user-location');
         }
-      });
+        if (map.current.getSource('user-location')) {
+          map.current.removeSource('user-location');
+        }
 
-      console.log('User location marker added to HeatmapView');
+        // Add user location source
+        map.current.addSource('user-location', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [userLocation.lon, userLocation.lat]
+            },
+            properties: {}
+          }
+        });
 
-    } catch (error) {
-      console.error('Error adding user location to HeatmapView:', error);
-    }
+        // Add user location layer
+        map.current.addLayer({
+          id: 'user-location',
+          type: 'circle',
+          source: 'user-location',
+          paint: {
+            'circle-radius': 12,
+            'circle-color': '#3b82f6',
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 3,
+            'circle-opacity': 1
+          }
+        });
+
+        console.log('User location marker added to HeatmapView');
+
+      } catch (error) {
+        console.error('Error adding user location to HeatmapView:', error);
+        // If it's a style loading error, retry after a delay (with limit)
+        if (error instanceof Error && error.message.includes('Style is not done loading') && retryCount < maxRetries) {
+          retryCount++;
+          console.log(`User location style loading error retry ${retryCount}/${maxRetries}...`);
+          setTimeout(() => addUserLocation(), 500);
+        } else {
+          console.error('Failed to add user location:', error);
+        }
+      }
+    };
+
+    // Only try once initially - no additional event listeners to prevent loops
+    const timeoutId = setTimeout(() => {
+      addUserLocation();
+    }, 300); // Slightly longer delay for more reliable style loading
+
+    // Cleanup
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [mapLoaded, userLocation]);
 
   const getCategoryLabel = (category: string) => {
