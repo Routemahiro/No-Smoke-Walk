@@ -447,7 +447,28 @@ export function HeatmapView() {
 
   const handleRefresh = () => {
     clearError();
-    refreshData();
+    
+    // マップの現在表示位置（中心座標）を取得して、その周辺データを取得
+    if (map.current) {
+      const center = map.current.getCenter();
+      const currentViewLocation = {
+        lat: center.lat,
+        lon: center.lng
+      };
+      
+      console.log('🗺️ Refreshing heatmap data for current view position:', currentViewLocation);
+      
+      // 現在の表示位置を基準にデータを再取得
+      const refreshFilters = {
+        ...filters,
+        userLocation: currentViewLocation
+      };
+      
+      updateFilters(refreshFilters);
+    } else {
+      // マップが利用できない場合は通常の更新
+      refreshData();
+    }
   };
 
   return (
@@ -521,9 +542,10 @@ export function HeatmapView() {
               disabled={loading}
               size="sm"
               variant="outline"
+              title="現在の表示位置周辺のデータを更新"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              更新
+              表示位置で更新
             </Button>
           </div>
         </CardContent>

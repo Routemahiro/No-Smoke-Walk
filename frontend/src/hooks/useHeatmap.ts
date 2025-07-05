@@ -143,10 +143,10 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
     setState(prev => ({ ...prev, error: null }));
   };
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount and when user location changes
   useEffect(() => {
     fetchHeatmapData();
-  }, []);
+  }, [filters.userLocation?.lat, filters.userLocation?.lon]);
 
   return {
     ...state,

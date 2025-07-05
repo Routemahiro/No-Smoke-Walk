@@ -273,9 +273,24 @@ const server = http.createServer(async (req, res) => {
       oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
       const timeFilter = oneMonthAgo.toISOString();
       
-      const reports = await supabaseRequest(`reports?select=lat,lon,category&reported_at=gte.${timeFilter}&order=reported_at.desc&limit=1000`);
+      let reports = await supabaseRequest(`reports?select=lat,lon,category&reported_at=gte.${timeFilter}&order=reported_at.desc&limit=1000`);
       
       console.log(`Retrieved ${reports.length} reports from last 30 days`);
+      
+      // Apply distance filtering if user location is provided
+      if (userLat && userLon) {
+        const centerLat = parseFloat(userLat);
+        const centerLon = parseFloat(userLon);
+        const maxDistance = 800; // 800m radius
+        
+        const originalCount = reports.length;
+        reports = reports.filter(report => {
+          const distance = calculateDistance(centerLat, centerLon, report.lat, report.lon);
+          return distance <= maxDistance;
+        });
+        
+        console.log(`Filtered to ${reports.length} reports within ${maxDistance}m of (${centerLat}, ${centerLon}), removed ${originalCount - reports.length} reports`);
+      }
       
       // Grid aggregation and density calculation
       const aggregatedFeatures = await processHeatmapData(reports, userLat, userLon);
