@@ -35,8 +35,9 @@ export default function HeatmapPage() {
 
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-sm text-gray-500">
-            <p>© 2025 NO-SMOKE ALERT Osaka. 大阪府路上喫煙対策の一環として運営されています。</p>
+          <div className="text-center text-sm text-gray-500 space-y-2">
+            <p>© 2025 NO-SMOKE ALERT Osaka</p>
+            <p>地図データ: © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">OpenStreetMap</a> contributors</p>
           </div>
         </div>
       </footer>
