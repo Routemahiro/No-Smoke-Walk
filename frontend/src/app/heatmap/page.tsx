@@ -25,9 +25,6 @@ export default function HeatmapPage() {
                 </p>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              NO-SMOKE ALERT Osaka v1.2.0
-            </div>
           </div>
         </div>
       </header>

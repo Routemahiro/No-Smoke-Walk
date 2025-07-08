@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RefreshCw, Filter, AlertCircle, Map, BarChart, MapPin } from 'lucide-react';
+import { RefreshCw, AlertCircle, Map, BarChart, MapPin } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useGeolocation } from '@/hooks/useGeolocation';
-import { ReportCategory } from '@/types';
 
 const OSAKA_CENTER: [number, number] = [135.5023, 34.6937]; // [lng, lat]
 const CATEGORY_COLORS = {
@@ -16,7 +15,6 @@ const CATEGORY_COLORS = {
 };
 
 interface FilterState {
-  category?: ReportCategory;
   days: number;
 }
 
@@ -26,14 +24,14 @@ export function HeatmapView() {
   const [maplibregl, setMaplibregl] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    days: 30,
+    days: 180, // 6ヶ月
   });
 
   const { location: userLocation, getCurrentLocation } = useGeolocation();
   
   // Include user location in heatmap filters
   const heatmapFilters = {
-    ...filters,
+    days: filters.days,
     minReports: 1, // Fixed to show all reports
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
   };
@@ -439,11 +437,6 @@ export function HeatmapView() {
     }
   };
 
-  const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
-    updateFilters(updatedFilters);
-  };
 
   const handleRefresh = () => {
     clearError();
@@ -460,7 +453,7 @@ export function HeatmapView() {
       
       // 現在の表示位置を基準にデータを再取得
       const refreshFilters = {
-        ...filters,
+        days: filters.days,
         userLocation: currentViewLocation
       };
       
@@ -486,38 +479,6 @@ export function HeatmapView() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 items-center">
-            {/* Category Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              <select
-                value={filters.category || ''}
-                onChange={(e) => handleFilterChange({ 
-                  category: e.target.value ? e.target.value as ReportCategory : undefined 
-                })}
-                className="px-3 py-1 border rounded-md text-sm"
-              >
-                <option value="">全カテゴリ</option>
-                <option value="walk_smoke">歩きタバコ</option>
-                <option value="stand_smoke">立ち止まり喫煙</option>
-              </select>
-            </div>
-
-            {/* Days Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm">期間:</span>
-              <select
-                value={filters.days}
-                onChange={(e) => handleFilterChange({ days: parseInt(e.target.value) })}
-                className="px-3 py-1 border rounded-md text-sm"
-              >
-                <option value={7}>1週間</option>
-                <option value={30}>1ヶ月</option>
-                <option value={90}>3ヶ月</option>
-                <option value={365}>1年</option>
-              </select>
-            </div>
-
-
             {/* User Location Button */}
             <Button
               onClick={async () => {

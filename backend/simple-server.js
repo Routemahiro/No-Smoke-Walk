@@ -268,14 +268,14 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       
-      // Get real data from Supabase HTTP API with 1-month time filter
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
-      const timeFilter = oneMonthAgo.toISOString();
+      // Get real data from Supabase HTTP API with 6-month time filter
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setDate(sixMonthsAgo.getDate() - 180);
+      const timeFilter = sixMonthsAgo.toISOString();
       
       let reports = await supabaseRequest(`reports?select=lat,lon,category&reported_at=gte.${timeFilter}&order=reported_at.desc&limit=1000`);
       
-      console.log(`Retrieved ${reports.length} reports from last 30 days`);
+      console.log(`Retrieved ${reports.length} reports from last 180 days`);
       
       // Apply distance filtering if user location is provided
       if (userLat && userLon) {
@@ -306,7 +306,7 @@ const server = http.createServer(async (req, res) => {
       // Cache the result
       setCachedData(cacheKey, realHeatmapData);
       
-      console.log(`Serving ${aggregatedFeatures.length} aggregated heatmap features (last 30 days, cached)`);
+      console.log(`Serving ${aggregatedFeatures.length} aggregated heatmap features (last 180 days, cached)`);
       res.writeHead(200);
       res.end(JSON.stringify(realHeatmapData));
       

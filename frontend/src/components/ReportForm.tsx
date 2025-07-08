@@ -79,7 +79,7 @@ export function ReportForm() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          迷惑タバコの報告
+          迷惑タバコ報告
         </CardTitle>
       </CardHeader>
       
@@ -181,8 +181,8 @@ export function ReportForm() {
         <div className="bg-muted/50 p-3 rounded-lg">
           <h5 className="text-xs font-medium mb-1">ご利用について</h5>
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• 連続投稿防止のため、10分間に{maxSubmissions}件まで投稿可能です</li>
-            <li>• 報告された情報は行政指導の資料として活用されます</li>
+            <li>• 情報精度向上のため、10分間に{maxSubmissions}件まで投稿可能としています</li>
+            <li>• 報告された情報は行政指導の資料として活用します</li>
           </ul>
         </div>
       </CardContent>

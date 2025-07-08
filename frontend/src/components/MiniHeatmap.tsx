@@ -407,7 +407,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Map className="h-4 w-4 text-blue-600" />
-            <h4 className="text-sm font-medium">🗺️ 周辺の報告状況</h4>
+            <h4 className="text-sm font-medium">🗺️ 周辺状況</h4>
           </div>
           <Link href="/heatmap">
             <Button variant="outline" size="sm" className="text-xs h-7">
