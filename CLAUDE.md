@@ -108,6 +108,64 @@ npm run lint
 - GET /api/admin/stats - 管理統計
 - GET /api/admin/export - データエクスポート
 - GET /api/geocode - 逆ジオコーディング（住所取得）
+- GET /api/export/csv - CSVデータエクスポート（シークレットキー認証）
+
+### CSVエクスポート機能の使用方法
+
+**基本的な使用方法**
+```bash
+# 全データダウンロード
+curl "http://localhost:8787/api/export/csv?secret=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090" > reports.csv
+
+# ブラウザでアクセス（ファイルダウンロード）
+http://localhost:8787/api/export/csv?secret=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+```
+
+**フィルタリング オプション**
+```bash
+# 過去30日間のデータのみ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&days=30" > reports_30days.csv
+
+# 歩きタバコのみ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&category=walk_smoke" > walk_smoke.csv
+
+# 立ち止まり喫煙のみ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&category=stand_smoke" > stand_smoke.csv
+
+# 特定の期間（日付指定）
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&start_date=2025-01-01&end_date=2025-12-31" > reports_2025.csv
+
+# 大阪府のデータのみ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&prefecture=大阪府" > osaka_reports.csv
+
+# 吹田市のデータのみ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&city=吹田市" > suita_reports.csv
+
+# 複数条件の組み合わせ
+curl "http://localhost:8787/api/export/csv?secret=no-smoke-walk-export-2025&days=7&category=walk_smoke&city=吹田市" > filtered_reports.csv
+```
+
+**CSVフォーマット**
+```
+ID,報告日時,緯度,経度,都道府県,市区町村,カテゴリ,信頼度スコア
+uuid-123,2025/1/15 14:30:00,34.6937,135.5023,大阪府,大阪市中央区,歩きタバコ,8
+```
+
+**セキュリティ**
+- シークレットキー: `b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090`
+- 環境変数 `EXPORT_SECRET_KEY` で設定（`backend/.env.local`ファイルで管理）
+- 無効なキーの場合は403エラーを返します
+- IPアドレス等の個人情報は含まれません（匿名化済みデータのみ）
+
+**本番環境への適用**
+```bash
+# 本番環境では環境変数として設定
+EXPORT_SECRET_KEY=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+
+# または Cloudflare Workers の場合
+wrangler secret put EXPORT_SECRET_KEY
+# プロンプトで値を入力: b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+```
 
 ## 詳細開発計画
 

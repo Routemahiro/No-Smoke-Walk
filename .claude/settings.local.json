@@ -59,7 +59,9 @@
       "Bash(npx wrangler dev:*)",
       "Bash(kill:*)",
       "mcp__playwright__browser_select_option",
-      "mcp__playwright__browser_tab_new"
+      "mcp__playwright__browser_tab_new",
+      "Bash(openssl rand:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   },

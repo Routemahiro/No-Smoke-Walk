@@ -9,11 +9,11 @@
 ## 主な機能
 
 - 📍 **位置情報付き報告**: GPS機能を使った正確な位置での報告
-- 🗺️ **ヒートマップ表示**: 報告データの視覚的な分析
+- 🗺️ **ヒートマップ表示**: 報告データの視覚的な分析（800m範囲フィルタリング）
 - 🛡️ **不正対策**: レート制限・フィンガープリントによるスパム防止
-- 📊 **管理者ダッシュボード**: 統計情報の表示と分析
-- 📁 **データエクスポート**: CSV/Excel形式でのデータダウンロード
-- 🔐 **管理者認証**: Magic Link認証による安全なアクセス
+- 📁 **データエクスポート**: CSV形式でのデータダウンロード（シークレットキー認証）
+- 🔐 **セキュアアクセス**: 管理者認証とシークレットキー保護
+- 🎯 **相対密度表示**: 周辺地域との比較によるヒートマップ表示
 
 ## 技術スタック
 
@@ -69,21 +69,26 @@ npm install
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# backend/.env
+# backend/.env.local
 DATABASE_URL=your_supabase_database_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_ANON_KEY=your_supabase_anon_key
+EXPORT_SECRET_KEY=your_secure_export_key
+ABUSE_GUARD=false
 ```
 
 ### 開発サーバー起動
 
 ```bash
-# フロントエンド (http://localhost:3000)
+# フロントエンド (http://localhost:3003)
 cd frontend
-npm run dev
+npx next dev --port 3003
 
 # バックエンド (http://localhost:8787)
 cd backend
-npx wrangler dev
+node simple-server.js
+
+# 両方を同時起動（推奨）
+cd frontend && npx next dev --port 3003 > /dev/null 2>&1 & cd ../backend && node simple-server.js > /dev/null 2>&1 &
 ```
 
 ## デプロイ
@@ -121,10 +126,48 @@ npx wrangler dev
 ### 公開エンドポイント
 - `POST /api/reports` - 新しい報告の投稿
 - `GET /api/heatmap` - ヒートマップデータの取得
+- `GET /api/geocode` - 住所取得（位置情報の逆ジオコーディング）
 
 ### 管理者エンドポイント
-- `GET /api/admin/export/csv` - CSVエクスポート
-- `GET /api/admin/export/excel` - Excelエクスポート
+- `GET /api/export/csv` - CSVデータエクスポート（シークレットキー認証）
+- `GET /api/admin/export/csv` - CSVエクスポート（管理者認証）
+- `GET /api/admin/export/excel` - Excelエクスポート（管理者認証）
+
+### データエクスポート機能
+
+投稿されたデータはCSV形式で簡単にダウンロードできます。
+
+#### 基本的な使用方法
+```bash
+# 全データをダウンロード
+curl "http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY" > reports.csv
+
+# ブラウザでアクセス（ファイルダウンロード）
+http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY
+```
+
+#### フィルタリングオプション
+```bash
+# 過去30日間のデータのみ
+curl "http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY&days=30" > reports.csv
+
+# 特定のカテゴリのみ
+curl "http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY&category=walk_smoke" > reports.csv
+
+# 日付範囲指定
+curl "http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY&start_date=2025-01-01&end_date=2025-12-31" > reports.csv
+
+# 地域指定
+curl "http://localhost:8787/api/export/csv?secret=YOUR_SECRET_KEY&prefecture=大阪府&city=大阪市" > reports.csv
+```
+
+#### CSVフォーマット
+```
+ID,報告日時,緯度,経度,都道府県,市区町村,カテゴリ,信頼度スコア
+uuid-123,2025/1/15 14:30:00,34.6937,135.5023,大阪府,大阪市中央区,歩きタバコ,8
+```
+
+**注意**: シークレットキーは環境変数 `EXPORT_SECRET_KEY` で管理されます。本番環境では適切にセキュアなキーを設定してください。
 
 ## セキュリティ機能
 

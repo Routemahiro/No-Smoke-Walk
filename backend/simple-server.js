@@ -2,6 +2,21 @@ const http = require('http');
 const url = require('url');
 const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+// Load environment variables from .env.local
+const envPath = path.join(__dirname, '.env.local');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value && !key.startsWith('#') && key.trim() && value.trim()) {
+      process.env[key.trim()] = value.trim();
+    }
+  });
+  console.log('✅ Loaded .env.local configuration');
+}
 
 const port = 8787;
 
@@ -320,6 +335,124 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // CSV Export endpoint
+  if (parsedUrl.pathname === '/api/export/csv' && req.method === 'GET') {
+    try {
+      const { secret, days, category, start_date, end_date, prefecture, city } = parsedUrl.query;
+      
+      // Check secret key from environment variable
+      const expectedSecret = process.env.EXPORT_SECRET_KEY;
+      if (!secret || secret !== expectedSecret) {
+        res.writeHead(403);
+        res.end(JSON.stringify({
+          success: false,
+          error: 'Unauthorized: Invalid secret key'
+        }));
+        return;
+      }
+      
+      console.log('CSV export requested with filters:', { days, category, start_date, end_date, prefecture, city });
+      
+      // Build query with filters
+      let queryParams = 'select=id,reported_at,lat,lon,prefecture,city,category,confidence_score&order=reported_at.desc&limit=10000';
+      
+      // Apply time filter
+      if (days) {
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+        queryParams += `&reported_at=gte.${daysAgo.toISOString()}`;
+      } else if (start_date) {
+        queryParams += `&reported_at=gte.${start_date}T00:00:00.000Z`;
+      }
+      
+      if (end_date) {
+        queryParams += `&reported_at=lte.${end_date}T23:59:59.999Z`;
+      }
+      
+      if (category) {
+        queryParams += `&category=eq.${category}`;
+      }
+      
+      if (prefecture) {
+        queryParams += `&prefecture=eq.${prefecture}`;
+      }
+      
+      if (city) {
+        queryParams += `&city=eq.${city}`;
+      }
+      
+      // Fetch data from Supabase
+      const reports = await supabaseRequest(`reports?${queryParams}`);
+      
+      console.log(`Retrieved ${reports.length} reports for CSV export`);
+      
+      // Helper function to get category label in Japanese
+      const getCategoryLabel = (category) => {
+        switch (category) {
+          case 'walk_smoke': return '歩きタバコ';
+          case 'stand_smoke': return '立ち止まり喫煙';
+          case 'litter': return 'ポイ捨て';
+          default: return category;
+        }
+      };
+      
+      // Generate CSV content
+      const csvHeaders = [
+        'ID',
+        '報告日時',
+        '緯度',
+        '経度', 
+        '都道府県',
+        '市区町村',
+        'カテゴリ',
+        '信頼度スコア'
+      ];
+      
+      const csvRows = reports.map(report => [
+        report.id,
+        new Date(report.reported_at).toLocaleString('ja-JP'),
+        report.lat.toString(),
+        report.lon.toString(),
+        report.prefecture,
+        report.city,
+        getCategoryLabel(report.category),
+        report.confidence_score.toString()
+      ]);
+      
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+      
+      // Add BOM for proper UTF-8 encoding in Excel
+      const bom = '\uFEFF';
+      const csvWithBom = bom + csvContent;
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      const filename = `no-smoke-walk-reports-${timestamp}.csv`;
+      
+      res.writeHead(200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Expose-Headers': 'Content-Disposition',
+      });
+      res.end(csvWithBom);
+      
+    } catch (err) {
+      console.error('CSV export error:', err);
+      res.writeHead(500);
+      res.end(JSON.stringify({
+        success: false,
+        error: 'Internal server error'
+      }));
+    }
+    
+    return;
+  }
+
   // Reports endpoint (real Supabase integration)
   if (parsedUrl.pathname === '/api/reports' && req.method === 'POST') {
     let body = '';
@@ -429,6 +562,7 @@ server.listen(port, () => {
   console.log(`\n🚀 Simple API Server running on http://localhost:${port}`);
   console.log(`📍 Health check: http://localhost:${port}/api/health`);
   console.log(`🗺️  Heatmap data: http://localhost:${port}/api/heatmap`);
+  console.log(`📊 CSV export: http://localhost:${port}/api/export/csv?secret=YOUR_SECRET`);
   console.log(`📝 Ready to serve No-Smoke Walk data!\n`);
 });
 
