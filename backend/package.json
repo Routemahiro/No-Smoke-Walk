@@ -1,25 +1,23 @@
 {
-  "name": "backend",
+  "name": "no-smoke-walk-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "build": "tsc",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "typecheck": "tsc --noEmit"
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["cloudflare", "workers", "osaka", "no-smoke"],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "No-Smoke Walk Osaka API - Cloudflare Workers backend",
   "dependencies": {
     "@cloudflare/workers-types": "^4.20250620.0",
-    "@supabase/supabase-js": "^2.50.2",
     "wrangler": "^4.20.3"
   },
   "devDependencies": {
-    "@types/node": "^24.0.3",
-    "typescript": "^5.8.3"
+    "@types/node": "^24.0.3"
   }
 }

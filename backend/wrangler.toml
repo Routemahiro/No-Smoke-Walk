@@ -1,14 +1,12 @@
 name = "no-smoke-walk-api"
-main = "src/index.ts"
-compatibility_date = "2024-01-01"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
-[env.development.vars]
-ENVIRONMENT = "development"
-ABUSE_GUARD = "false"
-SUPABASE_URL = "https://qdqcocgoaxzbhvvmvttr.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTIyNjQ3MywiZXhwIjoyMDY2ODAyNDczfQ.W7Z8Q7rLe9GY4BI2r_8Mg7Y-KcOGvv5iHsDc2VPZbzs"
+[env.staging]
+name = "no-smoke-walk-api-staging"
+vars = { ENVIRONMENT = "staging" }
 
-[env.production.vars]
-ENVIRONMENT = "production"
-ABUSE_GUARD = "true"
+[env.production]
+name = "no-smoke-walk-api"
+vars = { ENVIRONMENT = "production" }

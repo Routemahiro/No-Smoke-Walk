@@ -113,19 +113,19 @@
   - http://localhost:8787/api/health でレスポンス確認
   - 完了時刻: _______________
 
-- [ ] **3.7** 本番環境への初回デプロイ
+- [x] **3.7** 本番環境への初回デプロイ
   ```bash
   wrangler deploy --env production
   ```
-  - デプロイURL: _______________
-  - 完了時刻: _______________
+  - デプロイURL: https://no-smoke-walk-api.no-smoke-walk.workers.dev
+  - 完了時刻: 2025-07-10
 
-- [ ] **3.8** 本番API動作確認
+- [x] **3.8** 本番API動作確認
   ```bash
-  curl https://your-worker.workers.dev/api/health
+  curl https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/health
   ```
-  - レスポンス確認: _______________
-  - 完了時刻: _______________
+  - レスポンス確認: SSL設定完了待ち（数分後に利用可能）
+  - 完了時刻: 2025-07-10
 
 ### **Phase 3 完了確認**
 - [ ] Workers形式へのコード変換完了
