@@ -20,10 +20,10 @@ interface FilterState {
 
 export function HeatmapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const [maplibregl, setMaplibregl] = useState<any>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const [maplibregl, setMaplibregl] = useState<typeof import('maplibre-gl') | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters] = useState<FilterState>({
     days: 180, // 6ヶ月
   });
 
@@ -58,7 +58,9 @@ export function HeatmapView() {
     if (!mapContainer.current || map.current || !maplibregl) return;
 
     // Use user location as center if available, otherwise fallback to Osaka center
-    const initialCenter = userLocation ? [userLocation.lon, userLocation.lat] : OSAKA_CENTER;
+    const initialCenter: [number, number] = userLocation 
+      ? [userLocation.lon, userLocation.lat] 
+      : OSAKA_CENTER;
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
@@ -286,7 +288,7 @@ export function HeatmapView() {
         });
 
         // Add popup on click
-        map.current.on('click', 'heatmap-points', (e: any) => {
+        map.current.on('click', 'heatmap-points', (e: maplibregl.MapMouseEvent & { features?: maplibregl.GeoJSONFeature[] }) => {
           const coordinates = e.lngLat;
           const properties = e.features?.[0]?.properties;
           
@@ -338,7 +340,7 @@ export function HeatmapView() {
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [mapLoaded, heatmapData]);
+  }, [mapLoaded, heatmapData, maplibregl]);
 
   // Add user location marker
   useEffect(() => {

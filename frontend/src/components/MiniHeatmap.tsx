@@ -17,8 +17,8 @@ interface MiniHeatmapProps {
 
 export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const [maplibregl, setMaplibregl] = useState<any>(null);
+  const map = useRef<maplibregl.Map | null>(null);
+  const [maplibregl, setMaplibregl] = useState<typeof import('maplibre-gl') | null>(null);
   const [isMapFullyReady, setIsMapFullyReady] = useState(false);
   
   const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap({
@@ -164,7 +164,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
         map.current = null;
       }
     };
-  }, [maplibregl]);
+  }, [maplibregl, userLocation]);
 
   // Add user location marker when ready
   useEffect(() => {
@@ -253,22 +253,23 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
 
           // Remove existing
           ['heatmap-layer', 'heatmap-points'].forEach(layerId => {
-            if (map.current.getLayer(layerId)) {
+            if (map.current && map.current.getLayer(layerId)) {
               map.current.removeLayer(layerId);
             }
           });
 
-          if (map.current.getSource('reports')) {
+          if (map.current && map.current.getSource('reports')) {
             map.current.removeSource('reports');
           }
 
           // Add new
-          map.current.addSource('reports', {
-            type: 'geojson',
-            data: heatmapData
-          });
+          if (map.current) {
+            map.current.addSource('reports', {
+              type: 'geojson',
+              data: heatmapData
+            });
 
-          map.current.addLayer({
+            map.current.addLayer({
             id: 'heatmap-layer',
             type: 'heatmap',
             source: 'reports',
@@ -366,6 +367,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
               'circle-opacity': 0.8
             }
           });
+          }
 
           // Re-add user location on top of heatmap if it exists
           if (userLocation) {

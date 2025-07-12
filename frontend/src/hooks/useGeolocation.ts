@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Location } from '@/types';
 
 interface GeolocationState {
@@ -19,8 +19,8 @@ export function useGeolocation(enableHighAccuracy = true) {
   });
   const [watchId, setWatchId] = useState<number | null>(null);
 
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
+  const getCurrentLocation = useCallback(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       setState(prev => ({
         ...prev,
         error: 'このブラウザは位置情報に対応していません',
@@ -85,7 +85,7 @@ export function useGeolocation(enableHighAccuracy = true) {
       },
       options
     );
-  };
+  }, [enableHighAccuracy]);
 
 
   const clearError = () => {
@@ -109,8 +109,8 @@ export function useGeolocation(enableHighAccuracy = true) {
     }));
   };
 
-  const startWatching = () => {
-    if (!navigator.geolocation) {
+  const startWatching = useCallback(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
       setState(prev => ({
         ...prev,
         error: 'このブラウザは位置情報に対応していません',
@@ -177,19 +177,22 @@ export function useGeolocation(enableHighAccuracy = true) {
     );
 
     setWatchId(id);
-  };
+  }, [enableHighAccuracy, watchId]);
 
-  const stopWatching = () => {
-    if (watchId) {
+  const stopWatching = useCallback(() => {
+    if (watchId && typeof window !== 'undefined') {
       console.log('📍 Stopping position watch');
       navigator.geolocation.clearWatch(watchId);
       setWatchId(null);
       setState(prev => ({ ...prev, isWatching: false }));
     }
-  };
+  }, [watchId]);
 
   // Auto-get location on mount if supported
   useEffect(() => {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined') return;
+    
     console.log('📍 useGeolocation hook mounted, navigator.geolocation available:', !!navigator.geolocation);
     if (navigator.geolocation) {
       console.log('📍 Auto-triggering location fetch on mount');
@@ -198,19 +201,21 @@ export function useGeolocation(enableHighAccuracy = true) {
 
     // Cleanup watch on unmount
     return () => {
-      if (watchId) {
+      if (watchId && typeof window !== 'undefined') {
         console.log('📍 Cleaning up position watch on unmount');
         navigator.geolocation.clearWatch(watchId);
       }
     };
-  }, [watchId]);
+  }, [watchId, getCurrentLocation]);
 
-  // Debug log current state
-  console.log('📍 useGeolocation current state:', {
-    hasLocation: !!state.location,
-    loading: state.loading,
-    error: state.error
-  });
+  // Debug log current state (only in browser)
+  if (typeof window !== 'undefined') {
+    console.log('📍 useGeolocation current state:', {
+      hasLocation: !!state.location,
+      loading: state.loading,
+      error: state.error
+    });
+  }
 
   return {
     ...state,

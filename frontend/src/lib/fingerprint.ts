@@ -36,7 +36,7 @@ export class FingerprintGenerator {
     // Add canvas fingerprint if available
     try {
       fingerprint.canvas = await this.generateCanvasFingerprint();
-    } catch (error) {
+    } catch {
       // Canvas fingerprinting may be blocked, continue without it
       console.debug('Canvas fingerprinting blocked or failed');
     }
@@ -123,7 +123,7 @@ export class FingerprintGenerator {
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    } catch (error) {
+    } catch {
       // Fallback to simple hash if SubtleCrypto is not available
       console.warn('SubtleCrypto not available, using fallback hash');
       return this.simpleHash(fingerprintString);

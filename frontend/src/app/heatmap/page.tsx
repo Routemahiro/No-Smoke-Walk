@@ -1,6 +1,21 @@
-import { HeatmapView } from '@/components/HeatmapView';
+'use client';
+
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+
+// Dynamically import HeatmapView to avoid SSR issues
+const HeatmapView = dynamic(() => import('@/components/HeatmapView').then(mod => ({ default: mod.HeatmapView })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-96">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">ヒートマップを読み込み中...</p>
+      </div>
+    </div>
+  )
+});
 
 export default function HeatmapPage() {
   return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/supabase';
 import { HeatmapData } from '@/types';
 
@@ -29,7 +29,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
     isUsingFallbackData: false,
   });
 
-  const fetchHeatmapData = async (customFilters?: HeatmapFilters) => {
+  const fetchHeatmapData = useCallback(async (customFilters?: HeatmapFilters) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
@@ -129,7 +129,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
         isUsingFallbackData: false,
       }));
     }
-  };
+  }, [filters]);
 
   const refreshData = () => {
     fetchHeatmapData();
@@ -146,7 +146,7 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
   // Auto-fetch on mount and when user location changes
   useEffect(() => {
     fetchHeatmapData();
-  }, [filters.userLocation?.lat, filters.userLocation?.lon]);
+  }, [filters.userLocation?.lat, filters.userLocation?.lon, fetchHeatmapData]);
 
   return {
     ...state,

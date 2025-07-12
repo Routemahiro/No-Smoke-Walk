@@ -1,7 +1,22 @@
-import { ReportForm } from '@/components/ReportForm';
+'use client';
+
+import dynamic from 'next/dynamic';
 // import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
 import { Map } from 'lucide-react';
+
+// Dynamically import ReportForm to avoid SSR issues
+const ReportForm = dynamic(() => import('@/components/ReportForm').then(mod => ({ default: mod.ReportForm })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-96">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">フォームを読み込み中...</p>
+      </div>
+    </div>
+  )
+});
 
 export default function Home() {
   return (

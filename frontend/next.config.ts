@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // 本番環境でのAPI URL書き換え
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://no-smoke-walk-api.no-smoke-walk.workers.dev'
-  }
+  },
 };
 
 export default nextConfig;

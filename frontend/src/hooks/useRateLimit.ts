@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FingerprintGenerator } from '@/lib/fingerprint';
 
 interface RateLimitState {
@@ -49,7 +49,7 @@ export function useRateLimit() {
   }, []);
 
   // Check rate limit status
-  const checkRateLimit = (): RateLimitState => {
+  const checkRateLimit = useCallback((): RateLimitState => {
     const now = Date.now();
     const windowMs = WINDOW_MINUTES * 60 * 1000;
     const submissions = getStoredSubmissions();
@@ -80,7 +80,7 @@ export function useRateLimit() {
       maxSubmissions: MAX_SUBMISSIONS,
       windowMinutes: WINDOW_MINUTES,
     };
-  };
+  }, [fingerprint]);
 
   // Record a new submission
   const recordSubmission = (): boolean => {
@@ -162,7 +162,7 @@ export function useRateLimit() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [fingerprint]);
+  }, [fingerprint, checkRateLimit]);
 
   return {
     ...rateLimitState,

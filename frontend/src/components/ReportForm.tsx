@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useRateLimit } from '@/hooks/useRateLimit';
