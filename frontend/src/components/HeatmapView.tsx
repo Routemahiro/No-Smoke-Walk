@@ -112,7 +112,7 @@ export function HeatmapView() {
         map.current = null;
       }
     };
-  }, [maplibregl, userLocation]);
+  }, [maplibregl]);
 
   // Move map to user location when it becomes available
   useEffect(() => {

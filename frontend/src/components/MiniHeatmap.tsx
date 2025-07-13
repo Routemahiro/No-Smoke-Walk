@@ -164,7 +164,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
         map.current = null;
       }
     };
-  }, [maplibregl, userLocation]);
+  }, [maplibregl]);
 
   // Add user location marker when ready
   useEffect(() => {
