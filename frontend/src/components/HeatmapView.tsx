@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -29,12 +29,12 @@ export function HeatmapView() {
 
   const { location: userLocation, getCurrentLocation } = useGeolocation();
   
-  // Include user location in heatmap filters
-  const heatmapFilters = {
+  // Include user location in heatmap filters (memoized to prevent infinite re-renders)
+  const heatmapFilters = useMemo(() => ({
     days: filters.days,
     minReports: 1, // Fixed to show all reports
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
-  };
+  }), [filters.days, userLocation?.lat, userLocation?.lon]);
   
   const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(heatmapFilters);
 

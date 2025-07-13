@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { Map, MapPin, ExternalLink, Loader2, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,12 +21,15 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   const [maplibregl, setMaplibregl] = useState<typeof import('maplibre-gl') | null>(null);
   const [isMapFullyReady, setIsMapFullyReady] = useState(false);
   
-  const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap({
+  // Memoize filters to prevent infinite re-renders
+  const heatmapFilters = useMemo(() => ({
     category: undefined,
     minReports: 1,
     days: 30,
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
-  });
+  }), [userLocation?.lat, userLocation?.lon]);
+
+  const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap(heatmapFilters);
 
   // Debug logging
   useEffect(() => {

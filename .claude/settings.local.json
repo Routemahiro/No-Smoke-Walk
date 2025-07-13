@@ -63,7 +63,11 @@
       "Bash(openssl rand:*)",
       "Bash(cat:*)",
       "WebFetch(domain:developers.cloudflare.com)",
-      "Bash(NEXT_PUBLIC_API_BASE_URL=https://no-smoke-walk-api.no-smoke-walk.workers.dev npm run build)"
+      "Bash(NEXT_PUBLIC_API_BASE_URL=https://no-smoke-walk-api.no-smoke-walk.workers.dev npm run build)",
+      "Bash(NEXT_PUBLIC_API_BASE_URL=\"https://no-smoke-walk-api.no-smoke-walk.workers.dev\" npm run build)",
+      "Bash(npx wrangler pages deploy:*)",
+      "Bash(npx wrangler auth:*)",
+      "Bash(npx wrangler:*)"
     ],
     "deny": []
   },
