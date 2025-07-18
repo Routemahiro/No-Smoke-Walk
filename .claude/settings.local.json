@@ -67,7 +67,12 @@
       "Bash(NEXT_PUBLIC_API_BASE_URL=\"https://no-smoke-walk-api.no-smoke-walk.workers.dev\" npm run build)",
       "Bash(npx wrangler pages deploy:*)",
       "Bash(npx wrangler auth:*)",
-      "Bash(npx wrangler:*)"
+      "Bash(npx wrangler:*)",
+      "Bash(nslookup:*)",
+      "Bash(whois:*)",
+      "WebFetch(domain:www.namecheap.com)",
+      "WebFetch(domain:dash.cloudflare.com)",
+      "Bash(NEXT_PUBLIC_API_BASE_URL=\"https://api.no-smoke-alert.com\" npm run build)"
     ],
     "deny": []
   },
