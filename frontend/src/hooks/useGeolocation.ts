@@ -29,12 +29,22 @@ export function useGeolocation(enableHighAccuracy = true) {
       return;
     }
 
+    // Check if the site is running on HTTPS (required for geolocation on mobile)
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+      setState(prev => ({
+        ...prev,
+        error: '位置情報機能にはHTTPS接続が必要です',
+        loading: false,
+      }));
+      return;
+    }
+
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     const options: PositionOptions = {
       enableHighAccuracy,
-      timeout: 10000,
-      maximumAge: 60000, // Cache for 1 minute
+      timeout: 15000, // Increased timeout for mobile
+      maximumAge: 30000, // Reduced cache time for more accuracy
     };
 
     navigator.geolocation.getCurrentPosition(
@@ -67,13 +77,13 @@ export function useGeolocation(enableHighAccuracy = true) {
         
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = '位置情報のアクセスが拒否されました。ブラウザの設定を確認してください。';
+            errorMessage = '位置情報のアクセスが拒否されました。スマートフォンの場合は、ブラウザの設定で位置情報を許可してください。';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = '位置情報が利用できません。';
+            errorMessage = '位置情報が利用できません。GPS機能を有効にしてください。';
             break;
           case error.TIMEOUT:
-            errorMessage = '位置情報の取得がタイムアウトしました。再度お試しください。';
+            errorMessage = '位置情報の取得がタイムアウトしました。屋外で再度お試しください。';
             break;
         }
 

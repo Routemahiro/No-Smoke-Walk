@@ -126,7 +126,7 @@ export default function Home() {
                 プライバシー保護
               </h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>• 位置情報は報告処理のためのみ使用され、精度は約200m以内です</p>
+                <p>• 位置情報は報告処理にのみ使用されます</p>
                 <p>• IPアドレスはハッシュ化され、個人の特定はできません</p>
                 <p>• 公開される情報には個人情報は含まれません</p>
               </div>

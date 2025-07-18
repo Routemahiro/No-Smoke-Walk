@@ -27,7 +27,7 @@ const CATEGORY_CONFIG = {
 } as const;
 
 export function ReportForm() {
-  const { location } = useGeolocation();
+  const { location, error: locationError, loading: locationLoading, getCurrentLocation } = useGeolocation();
   const { isBlocked, remainingTime, submissionCount, maxSubmissions, recordSubmission } = useRateLimit();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -88,6 +88,45 @@ export function ReportForm() {
         <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
 
 
+        {/* Location Status */}
+        <div className="space-y-2">
+          {locationLoading && (
+            <Alert>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <AlertDescription>位置情報を取得中...</AlertDescription>
+            </Alert>
+          )}
+          
+          {locationError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {locationError}
+                {locationError.includes('拒否') && (
+                  <div className="mt-2 text-xs bg-blue-50 p-2 rounded">
+                    <strong>📱 スマートフォンでの設定方法:</strong><br/>
+                    <strong>Android Chrome:</strong><br/>
+                    1. アドレスバーの左の🔒マークをタップ<br/>
+                    2. 「位置情報」を「許可」に変更<br/>
+                    3. ページを再読み込み<br/><br/>
+                    <strong>iPhone:</strong><br/>
+                    • <strong>Safari推奨</strong>: 位置情報が正常に動作します
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  className="mt-2"
+                >
+                  再試行
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          
+        </div>
 
         {/* Category Selection */}
         <div className="space-y-2">
