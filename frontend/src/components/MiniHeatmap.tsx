@@ -27,7 +27,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
     minReports: 1,
     days: 30,
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
-  }), [userLocation?.lat, userLocation?.lon]);
+  }), [userLocation]);
 
   const { data: heatmapData, loading, error, isUsingFallbackData } = useHeatmap(heatmapFilters);
 
@@ -167,7 +167,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
         map.current = null;
       }
     };
-  }, [maplibregl]);
+  }, [maplibregl, userLocation]);
 
   // Add user location marker when ready
   useEffect(() => {

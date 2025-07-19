@@ -73,7 +73,10 @@
       "WebFetch(domain:www.namecheap.com)",
       "WebFetch(domain:dash.cloudflare.com)",
       "Bash(NEXT_PUBLIC_API_BASE_URL=\"https://api.no-smoke-alert.com\" npm run build)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(convert:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   },

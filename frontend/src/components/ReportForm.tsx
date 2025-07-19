@@ -10,6 +10,7 @@ import { useRateLimit } from '@/hooks/useRateLimit';
 import { apiClient } from '@/lib/supabase';
 import { ReportCategory } from '@/types';
 import { MiniHeatmap } from '@/components/MiniHeatmap';
+import { trackReportSubmission } from '@/components/GoogleAnalytics';
 
 const CATEGORY_CONFIG = {
   walk_smoke: {
@@ -59,6 +60,9 @@ export function ReportForm() {
         lon: location.lon,
         category: selectedCategory,
       });
+
+      // Track the successful submission with Google Analytics
+      trackReportSubmission(selectedCategory, { lat: location.lat, lon: location.lon });
 
       setSubmitSuccess(true);
       setSelectedCategory(null);

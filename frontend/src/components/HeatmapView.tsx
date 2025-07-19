@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RefreshCw, AlertCircle, Map, BarChart, MapPin } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { trackMapInteraction } from '@/components/GoogleAnalytics';
 
 const OSAKA_CENTER: [number, number] = [135.5023, 34.6937]; // [lng, lat]
 const CATEGORY_COLORS = {
@@ -34,7 +35,7 @@ export function HeatmapView() {
     days: filters.days,
     minReports: 1, // Fixed to show all reports
     userLocation: userLocation ? { lat: userLocation.lat, lon: userLocation.lon } : undefined
-  }), [filters.days, userLocation?.lat, userLocation?.lon]);
+  }), [filters.days, userLocation]);
   
   const { data: heatmapData, loading, error, updateFilters, refreshData, clearError } = useHeatmap(heatmapFilters);
 
@@ -98,6 +99,7 @@ export function HeatmapView() {
     map.current.on('load', () => {
       console.log('Map loaded event fired');
       setMapLoaded(true);
+      trackMapInteraction('heatmap_loaded');
     });
 
     // Also listen for when the map is completely ready
@@ -106,13 +108,22 @@ export function HeatmapView() {
       setMapLoaded(true);
     });
 
+    // Track map interactions
+    map.current.on('zoomend', () => {
+      trackMapInteraction('zoom');
+    });
+
+    map.current.on('moveend', () => {
+      trackMapInteraction('pan');
+    });
+
     return () => {
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
     };
-  }, [maplibregl]);
+  }, [maplibregl, userLocation]);
 
   // Move map to user location when it becomes available
   useEffect(() => {
@@ -291,6 +302,9 @@ export function HeatmapView() {
         map.current.on('click', 'heatmap-points', (e: maplibregl.MapMouseEvent & { features?: maplibregl.GeoJSONFeature[] }) => {
           const coordinates = e.lngLat;
           const properties = e.features?.[0]?.properties;
+          
+          // Track popup interaction
+          trackMapInteraction('heatmap_popup_click');
           
           if (properties && maplibregl) {
             new maplibregl.Popup()

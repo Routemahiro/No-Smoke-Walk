@@ -1,0 +1,17 @@
+name: "NO-SMOKE ALERT Osaka"
+purpose: "迷惑タバコ（歩きタバコ・禁煙エリアの立ち止まり喫煙）の市民報告を集積し、行政指導の効率化に貢献する"
+key_features:
+  - "Webフォームから誰でも簡易に報告可能（スマホ・PC対応）"
+  - "位置情報を取得し、ヒートマップで可視化"
+  - "匿名報告：IPアドレスはハッシュ化し個人を特定不可"
+  - "公開データに個人情報を含まない"
+  - "収集データで巡回ルート最適化を支援"
+privacy_policy:
+  location_usage: "報告処理のみに使用"
+  ip_hash: true
+  personal_data_public: false
+tech_stack:
+  map: "Mapbox + OpenStreetMap"
+  backend: "不明（現状）"
+  frontend: "不明（現状）"
+license: "© 2025 NO-SMOKE ALERT Osaka" 

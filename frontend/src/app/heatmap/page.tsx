@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { NinjaAd } from '@/components/NinjaAd';
 
 // Dynamically import HeatmapView to avoid SSR issues
 const HeatmapView = dynamic(() => import('@/components/HeatmapView').then(mod => ({ default: mod.HeatmapView })), {
@@ -44,8 +45,13 @@ export default function HeatmapPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <HeatmapView />
+        
+        {/* Ad placement at bottom of heatmap */}
+        <div className="flex justify-center">
+          <NinjaAd adId="ninja-ad-heatmap" className="max-w-lg" />
+        </div>
       </main>
 
       <footer className="bg-white border-t mt-12">
