@@ -82,11 +82,6 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Ninja Ad */}
-          <div className="lg:col-span-2 flex justify-center">
-            <NinjaAd adId="ninja-ad-1" className="max-w-md" />
-          </div>
-
           {/* Information Panel */}
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -138,6 +133,11 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Ninja Ad - placed outside the grid layout */}
+        <div className="mt-12 flex justify-center">
+          <NinjaAd adId="ninja-ad-1" className="max-w-lg" />
         </div>
       </main>
 

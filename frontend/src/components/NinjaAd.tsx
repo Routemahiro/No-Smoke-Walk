@@ -30,7 +30,7 @@ export function NinjaAd({ adId, className = '' }: NinjaAdProps) {
                   setAdFailed(true);
                 }
               }, 1000);
-            } catch (error) {
+            } catch {
               setAdFailed(true);
             }
           });
