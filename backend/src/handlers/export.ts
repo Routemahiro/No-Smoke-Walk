@@ -1,4 +1,3 @@
-import { createSupabaseClient } from '../utils/supabase';
 import { ApiResponse, Env } from '../types';
 
 export async function handleExportCSV(request: Request, env: Env): Promise<Response> {
@@ -13,44 +12,40 @@ export async function handleExportCSV(request: Request, env: Env): Promise<Respo
     const prefecture = searchParams.get('prefecture');
     const city = searchParams.get('city');
 
-    // Create Supabase client
-    const supabase = createSupabaseClient(env);
-
-    // Build query with filters
-    let query = supabase
-      .from('reports')
-      .select('id, reported_at, lat, lon, prefecture, city, category, confidence_score')
-      .order('reported_at', { ascending: false });
+    // Build query URL with filters
+    let queryUrl = `${env.SUPABASE_URL}/rest/v1/reports?select=id,reported_at,lat,lon,prefecture,city,category,confidence_score&order=reported_at.desc`;
 
     // Apply filters
     if (category) {
-      query = query.eq('category', category);
+      queryUrl += `&category=eq.${category}`;
     }
     if (startDate) {
-      query = query.gte('reported_at', startDate);
+      queryUrl += `&reported_at=gte.${startDate}`;
     }
     if (endDate) {
-      query = query.lte('reported_at', endDate);
+      queryUrl += `&reported_at=lte.${endDate}`;
     }
     if (prefecture) {
-      query = query.eq('prefecture', prefecture);
+      queryUrl += `&prefecture=eq.${prefecture}`;
     }
     if (city) {
-      query = query.eq('city', city);
+      queryUrl += `&city=eq.${city}`;
     }
 
-    const { data: reports, error } = await query;
+    const response = await fetch(queryUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (error) {
-      console.error('Database error:', error);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to fetch report data'
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!response.ok) {
+      throw new Error(`Supabase query failed: ${response.status} ${response.statusText}`);
     }
+
+    const reports = await response.json();
 
     // Generate CSV content
     const csvHeaders = [
@@ -123,44 +118,40 @@ export async function handleExportExcel(request: Request, env: Env): Promise<Res
     const prefecture = searchParams.get('prefecture');
     const city = searchParams.get('city');
 
-    // Create Supabase client
-    const supabase = createSupabaseClient(env);
-
-    // Build query with filters
-    let query = supabase
-      .from('reports')
-      .select('id, reported_at, lat, lon, prefecture, city, category, confidence_score')
-      .order('reported_at', { ascending: false });
+    // Build query URL with filters
+    let queryUrl = `${env.SUPABASE_URL}/rest/v1/reports?select=id,reported_at,lat,lon,prefecture,city,category,confidence_score&order=reported_at.desc`;
 
     // Apply filters
     if (category) {
-      query = query.eq('category', category);
+      queryUrl += `&category=eq.${category}`;
     }
     if (startDate) {
-      query = query.gte('reported_at', startDate);
+      queryUrl += `&reported_at=gte.${startDate}`;
     }
     if (endDate) {
-      query = query.lte('reported_at', endDate);
+      queryUrl += `&reported_at=lte.${endDate}`;
     }
     if (prefecture) {
-      query = query.eq('prefecture', prefecture);
+      queryUrl += `&prefecture=eq.${prefecture}`;
     }
     if (city) {
-      query = query.eq('city', city);
+      queryUrl += `&city=eq.${city}`;
     }
 
-    const { data: reports, error } = await query;
+    const response = await fetch(queryUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (error) {
-      console.error('Database error:', error);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to fetch report data'
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!response.ok) {
+      throw new Error(`Supabase query failed: ${response.status} ${response.statusText}`);
     }
+
+    const reports = await response.json();
 
     // For Excel, we'll create a simple XML-based Excel format (SpreadsheetML)
     const excelHeaders = [

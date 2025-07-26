@@ -17,8 +17,10 @@ export interface DbReport {
 
 // 報告投稿リクエスト
 export interface ReportSubmissionRequest {
-  lat: number;
-  lon: number;
+  lat?: number;
+  lon?: number;
+  latitude?: number;
+  longitude?: number;
   category: ReportCategory;
 }
 
@@ -61,7 +63,7 @@ export interface ApiResponse<T = any> {
 // 環境変数型
 export interface Env {
   SUPABASE_URL: string;
-  SUPABASE_SERVICE_ROLE_KEY: string;
+  SUPABASE_ANON_KEY: string;
   CACHE?: KVNamespace;
   ABUSE_GUARD?: string;
   ENVIRONMENT?: string;

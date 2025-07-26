@@ -1,4 +1,3 @@
-import { createSupabaseClient } from '../utils/supabase';
 import { HeatmapResponse, ApiResponse, Env, ReportCategory } from '../types';
 
 export async function handleHeatmapRequest(request: Request, env: Env): Promise<Response> {
@@ -32,33 +31,30 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
       });
     }
 
-    // Create Supabase client
-    const supabase = createSupabaseClient(env);
-
-    // Build query
-    let query = supabase
-      .from('reports')
-      .select('lat, lon, category')
-      .gte('reported_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
-
+    // Build query URL
+    const dateFilter = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    let queryUrl = `${env.SUPABASE_URL}/rest/v1/reports?select=lat,lon,category&reported_at=gte.${dateFilter}`;
+    
     // Apply category filter if specified
     if (category) {
-      query = query.eq('category', category);
+      queryUrl += `&category=eq.${category}`;
     }
 
-    // Execute query
-    const { data: reports, error } = await query;
+    // Execute query via HTTP API
+    const dbResponse = await fetch(queryUrl, {
+      method: 'GET',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (error) {
-      console.error('Database error:', error);
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to fetch heatmap data'
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    if (!dbResponse.ok) {
+      throw new Error(`Supabase query failed: ${dbResponse.status} ${dbResponse.statusText}`);
     }
+
+    const reports = await dbResponse.json();
 
     // Aggregate reports by grid (simplified 1km grid)
     const gridSize = 0.009; // Approximately 1km at Osaka latitude
@@ -142,19 +138,23 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
 // Helper function to get heatmap statistics
 export async function handleHeatmapStats(request: Request, env: Env): Promise<Response> {
   try {
-    const supabase = createSupabaseClient(env);
-    
     // Get statistics for the last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
-    const { data: stats, error } = await supabase
-      .from('reports')
-      .select('category, prefecture, city')
-      .gte('reported_at', thirtyDaysAgo.toISOString());
+    const statsResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports?select=category,prefecture,city&reported_at=gte.${thirtyDaysAgo.toISOString()}`, {
+      method: 'GET',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    if (error) {
-      throw error;
+    if (!statsResponse.ok) {
+      throw new Error(`Supabase query failed: ${statsResponse.status} ${statsResponse.statusText}`);
     }
+
+    const stats = await statsResponse.json();
 
     // Calculate statistics
     const totalReports = stats?.length || 0;

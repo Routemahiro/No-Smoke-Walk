@@ -82,7 +82,8 @@
       "Bash(npm:*)",
       "Bash(npx next:*)",
       "Bash(sudo rm:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "WebFetch(domain:f66afb3d.no-smoke-walk.pages.dev)"
     ],
     "deny": []
   },

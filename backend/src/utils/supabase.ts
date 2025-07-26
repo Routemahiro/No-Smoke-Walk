@@ -1,21 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
 import { Env } from '../types';
-
-export function createSupabaseClient(env: Env) {
-  const supabaseUrl = env.SUPABASE_URL;
-  const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-
-  return createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-}
 
 // Helper function to get location name from coordinates
 export async function getLocationName(lat: number, lon: number): Promise<{ prefecture: string; city: string }> {
