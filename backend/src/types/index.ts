@@ -64,6 +64,7 @@ export interface ApiResponse<T = any> {
 export interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
+  EXPORT_SECRET_KEY?: string;
   CACHE?: KVNamespace;
   ABUSE_GUARD?: string;
   ENVIRONMENT?: string;

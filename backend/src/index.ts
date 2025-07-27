@@ -61,6 +61,10 @@ export default {
       return handleHeatmapStats(request, env);
     }
 
+    if (url.pathname === '/api/export/csv' && request.method === 'GET') {
+      return handleExportCSV(request, env);
+    }
+
     if (url.pathname === '/api/admin/export/csv' && request.method === 'GET') {
       return handleExportCSV(request, env);
     }

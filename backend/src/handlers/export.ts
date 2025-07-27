@@ -5,6 +5,18 @@ export async function handleExportCSV(request: Request, env: Env): Promise<Respo
     const url = new URL(request.url);
     const searchParams = url.searchParams;
     
+    // Check secret key authentication
+    const secret = searchParams.get('secret');
+    if (!secret || secret !== env.EXPORT_SECRET_KEY) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid or missing secret key'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
     // Parse query parameters
     const category = searchParams.get('category');
     const startDate = searchParams.get('start_date');
