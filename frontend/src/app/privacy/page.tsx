@@ -22,63 +22,63 @@ export default function PrivacyPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm border p-8">
           <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-4">1. 個人情報の取得について</h2>
-            <p className="mb-6 text-gray-700">
-              当サービスでは、サービス提供のために以下の情報を取得する場合があります：
+            <div className="mb-8">
+              <p className="text-gray-600 mb-4">最終更新日：YYYY‑MM‑DD</p>
+              <p className="text-gray-700 leading-relaxed">
+                本プライバシーポリシー（以下「本ポリシー」）は、No‑Smoke Alert（以下「本サービス」）を運営する◯◯（以下「当運営」）が、本サービスの利用に際して取得する情報の取り扱い方針を定めるものです。
+              </p>
+            </div>
+
+            <h2 className="text-xl font-semibold mb-4">◆ 1. 収集する情報</h2>
+            <p className="mb-4 text-gray-700 leading-relaxed">
+              当運営は、本サービスにおいて以下の情報のみを取得します。
             </p>
-            <ul className="list-disc list-inside mb-6 text-gray-700 space-y-2">
-              <li>位置情報（報告時の緯度・経度）</li>
-              <li>IPアドレス（ハッシュ化して保存）</li>
-              <li>ブラウザ情報（重複投稿防止のため）</li>
-              <li>アクセス解析データ（Google Analytics）</li>
-            </ul>
+            <div className="mb-6 text-gray-700 space-y-2">
+              <p>(a) 位置情報（緯度・経度）</p>
+              <p>(b) IPアドレス</p>
+              <p>(c) 通報日時</p>
+            </div>
 
-            <h2 className="text-xl font-semibold mb-4">2. 個人情報の利用目的</h2>
-            <p className="mb-4 text-gray-700">
-              取得した個人情報は以下の目的で利用します：
+            <h2 className="text-xl font-semibold mb-4">◆ 2. 利用目的</h2>
+            <p className="mb-4 text-gray-700 leading-relaxed">
+              取得した情報は、次の目的にのみ利用します。
             </p>
-            <ul className="list-disc list-inside mb-6 text-gray-700 space-y-2">
-              <li>迷惑タバコの報告データとしての集計・分析</li>
-              <li>重複投稿や不正利用の防止</li>
-              <li>サービスの改善・運営</li>
-              <li>法令に基づく対応</li>
-            </ul>
-
-            <h2 className="text-xl font-semibold mb-4">3. 個人情報の管理</h2>
-            <ul className="list-disc list-inside mb-6 text-gray-700 space-y-2">
-              <li>IPアドレスはSHA-256でハッシュ化され、個人の特定はできません</li>
-              <li>位置情報は報告データとしてのみ使用され、個人との紐付けは行いません</li>
-              <li>適切なセキュリティ対策を講じて情報を保護します</li>
-            </ul>
-
-            <h2 className="text-xl font-semibold mb-4">4. 第三者への提供</h2>
-            <p className="mb-6 text-gray-700">
-              個人情報は、法令に基づく場合を除き、第三者に提供することはありません。
-              ただし、統計的に処理された匿名データについては、行政機関等に提供する場合があります。
+            <div className="mb-6 text-gray-700 space-y-2">
+              <p>(1) 通報地点を地図上に表示するため</p>
+              <p>(2) 通報データを統計化し、サービス改善に役立てるため</p>
+              <p>(3) 行政・自治体へ提供する報告資料の作成のため</p>
+            </div>
+            <p className="mb-6 text-gray-700 leading-relaxed">
+              これらの目的以外で利用することはありません。
             </p>
 
-            <h2 className="text-xl font-semibold mb-4">5. Google Analyticsの利用</h2>
-            <p className="mb-6 text-gray-700">
-              当サービスでは、Googleが提供するアクセス解析ツール「Google Analytics」を使用しています。
-              Google Analyticsはクッキーを使用してユーザーの行動を分析しますが、
-              個人を特定する情報は含まれません。
+            <h2 className="text-xl font-semibold mb-4">◆ 3. 第三者提供</h2>
+            <p className="mb-6 text-gray-700 leading-relaxed">
+              当運営は、取得情報を行政・自治体に限り提供する場合があります。<br />
+              法令に基づく開示要請を除き、その他の第三者へは提供いたしません。
             </p>
 
-            <h2 className="text-xl font-semibold mb-4">6. クッキーについて</h2>
-            <p className="mb-6 text-gray-700">
-              当サービスでは、サービス向上のためクッキーを使用する場合があります。
-              ブラウザの設定により、クッキーの受け取りを拒否することが可能です。
+            <h2 className="text-xl font-semibold mb-4">◆ 4. Cookie 及び Google Analytics</h2>
+            <div className="mb-6 text-gray-700 space-y-3">
+              <p>4‑1. 本サービスはアクセス解析のため Google Analytics（GA）を利用します。GA は Cookie を用いて利用者のサイト閲覧情報を匿名で収集します。</p>
+              <p>4‑2. GA によるデータ収集を望まない場合、Google 提供の「Google Analytics オプトアウトブラウザアドオン」をインストールすることで無効化できます。</p>
+              <p>4‑3. 将来的に広告配信を行う際は、広告 Cookie の使用およびオプトアウト方法を本サイト上で改めて告知します。</p>
+            </div>
+
+            <h2 className="text-xl font-semibold mb-4">◆ 5. 開示・削除請求</h2>
+            <p className="mb-6 text-gray-700 leading-relaxed">
+              取得情報の開示・訂正・利用停止・削除等を希望される場合は、下記お問い合わせ窓口までご連絡ください。
             </p>
 
-            <h2 className="text-xl font-semibold mb-4">7. プライバシーポリシーの変更</h2>
-            <p className="mb-6 text-gray-700">
-              当サービスは、必要に応じて本プライバシーポリシーを変更することがあります。
-              変更後のプライバシーポリシーは、本サービス上で告知された時点から効力を生じます。
-            </p>
+            <h2 className="text-xl font-semibold mb-4">◆ 6. お問い合わせ</h2>
+            <div className="mb-6 text-gray-700">
+              <p className="mb-2">本ポリシーに関するご質問は、下記メールアドレスまでお問い合わせください。</p>
+              <p className="font-mono text-blue-600">&lt;privacy@example.com&gt;</p>
+              <p className="text-sm text-gray-500">（※仮アドレス）</p>
+            </div>
 
             <div className="mt-12 pt-8 border-t text-center text-gray-500">
-              <p>制定日：2025年1月1日</p>
-              <p>最終更新：2025年1月1日</p>
+              <p>― 以上 ―</p>
             </div>
           </div>
         </div>
