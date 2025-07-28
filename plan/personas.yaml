@@ -1,0 +1,66 @@
+personas:
+  compliant_smoker:
+    label: "一般喫煙者（区画内喫煙）"
+    summary: "喫煙可能区画を守っているのに、歩きタバコ等のマナー違反者のせいで肩身が狭くなる" 
+    pain_points:
+      - "世間から一括りにマナー違反と見なされる不公平感"
+      - "喫煙可能区画までの移動コストが報われない"
+    motivators:
+      - "自分たちのイメージ回復"
+      - "マナー遵守を可視化し、非喫煙者との対立を減らしたい"
+    preferred_channels: ["SNS (X)", "掲示ポスターのQR"]
+
+  parents:
+    label: "子育て世代"
+    summary: "子どもが歩きタバコによる火傷・受動喫煙の健康被害を受ける危険がある"
+    pain_points:
+      - "ベビーカーや低身長の子どもが煙を直接吸い込みやすい"
+      - "火の粉が顔や腕に当たる恐怖"
+    motivators:
+      - "安全な通学路・公園環境を守りたい"
+      - "行政に即対応してほしいという切迫感"
+    preferred_channels: ["Instagram", "LINE公式", "ママ友コミュニティ"]
+
+  commuters:
+    label: "通勤会社員"
+    summary: "朝の通勤時、駅周辺などで煙に曝露しストレスが増幅する"
+    pain_points:
+      - "ネクタイやスーツに臭いが付く"
+      - "ストレス増大で仕事前に気分が悪い"
+    motivators:
+      - "快適な出勤環境"
+      - "問題エリアを可視化して市に改善を促したい"
+    preferred_channels: ["X", "社内掲示板/Slack"]
+
+  store_owners:
+    label: "地元店舗オーナー・路面店長"  # Persona A
+    summary: "店前での立ちタバコにより臭い・吸い殻が発生し客足に直結する"
+    pain_points:
+      - "売上悪化・店のイメージダウン"
+      - "清掃コスト増"
+    motivators:
+      - "店舗前クリーン化で売上回復"
+      - "行政を動かす実効的なデータがほしい"
+    preferred_channels: ["商工会議所ニュース", "ポスターQR", "Facebookグループ"]
+
+  respiratory_risk:
+    label: "呼吸器系リスク層（喘息・COPD など）"  # Persona B
+    summary: "二次煙で症状悪化のリスクが高く、屋外でも避けたい"
+    pain_points:
+      - "発作誘発で命に関わる"
+      - "外出自体が怖くなる"    
+    motivators:
+      - "危険スポットの事前把握"
+      - "行政への強い対策要求"
+    preferred_channels: ["家族経由LINE", "病院掲示物", "健康系ブログ"]
+
+  npo:
+    label: "環境・健康 NPO／市民団体"  # Persona E
+    summary: "屋外受動喫煙問題に高い問題意識を持ち、行政交渉の経験とネットワークがある"
+    pain_points:
+      - "データ不足で行政を動かしきれない"
+      - "市民の関心が一過性に終わりやすい"
+    motivators:
+      - "信頼できる統計データの共同活用"
+      - "メディア・行政へのインパクトあるアクション"
+    preferred_channels: ["メールニュースレター", "共同プレスリリース", "オフライン会合"] 
