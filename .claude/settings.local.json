@@ -84,7 +84,15 @@
       "Bash(sudo rm:*)",
       "Bash(git config:*)",
       "WebFetch(domain:f66afb3d.no-smoke-walk.pages.dev)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:no-smoke-alert.com)",
+      "WebFetch(domain:5a55d8eb.no-smoke-walk.pages.dev)",
+      "WebFetch(domain:589a50a6.no-smoke-walk.pages.dev)",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:a21350b6.no-smoke-walk.pages.dev)",
+      "WebFetch(domain:82043df4.no-smoke-walk.pages.dev)",
+      "WebFetch(domain:cd235151.no-smoke-walk.pages.dev)",
+      "WebFetch(domain:c4c24473.no-smoke-walk.pages.dev)"
     ],
     "deny": []
   },

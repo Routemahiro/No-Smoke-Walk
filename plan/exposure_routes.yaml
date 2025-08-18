@@ -1,0 +1,58 @@
+routes:
+  - id: x
+    name: "X (旧Twitter)"
+    channel_type: "SNS"
+    target_personas: ["commuters", "parents", "compliant_smoker"]
+    content_examples:
+      - "市提出までの残件数カウンター付き固定ポスト"
+      - "週次ヒートマップ&迷惑スポットTOP5画像"
+    timeline: "ローンチ当日〜継続運用"
+    kpi: ["インプレッション", "リンククリック", "SNS経由報告件数"]
+
+  - id: instagram
+    name: "Instagram"
+    channel_type: "SNS"
+    target_personas: ["parents", "students"]
+    content_examples:
+      - "カルーセル：子どもの目線で見た歩きタバコ危険写真"
+      - "リール動画：クリーンウォークイベントダイジェスト"
+    timeline: "ローンチ当日〜継続運用"
+    kpi: ["フォロワー増加", "リンククリック", "報告件数"]
+
+  - id: note
+    name: "Note (公式コラム)"
+    channel_type: "Blog/SEO"
+    target_personas: ["parents", "respiratory_risk", "npo"]
+    content_examples:
+      - "歩きタバコが及ぼす健康リスク解説"
+      - "データで見る大阪市内の喫煙マナー現状"
+    timeline: "M0〜M6: 週1更新予定"
+    kpi: ["検索流入UU", "エンゲージメント率", "被リンク数"]
+
+  - id: solomaker
+    name: "Solomaker.dev / ProductHunt 等"
+    channel_type: "プロダクト投稿サイト"
+    target_personas: ["store_owners", "npo", "commuters"]
+    content_examples:
+      - "ローンチ投稿: 問題提起 → デモGIF → 参加呼びかけ"
+    timeline: "ローンチWeek1 (英語版LP準備)"
+    kpi: ["Upvote数", "クリック数", "新規UU"]
+
+  - id: fb_group
+    name: "Facebook地域グループ投稿"
+    channel_type: "SNSコミュニティ"  # Next Action 2
+    target_personas: ["store_owners", "parents", "npo"]
+    content_examples:
+      - "商店街グループにQRポスター設置依頼投稿"
+      - "進捗ヒートマップを共有し協力呼びかけ"
+    timeline: "ローンチWeek1〜Week2: 3グループで試験投稿 → 反応計測"
+    kpi: ["投稿リーチ", "QRスキャン数", "報告件数"]
+
+  - id: pta_flyer
+    name: "PTA経由チラシテンプレート配布"
+    channel_type: "オフライン・紙媒体"  # Next Action 5
+    target_personas: ["parents", "students", "respiratory_risk"]
+    content_examples:
+      - "A5両面チラシ: 危険事例 + QR コード付き通報ガイド"
+    timeline: "ローンチMonth1: 学区3校でテスト配布 → 効果検証後スケール"
+    kpi: ["配布枚数", "QRスキャン数", "報告件数"] 
