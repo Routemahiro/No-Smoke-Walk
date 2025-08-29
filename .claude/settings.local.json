@@ -92,7 +92,11 @@
       "WebFetch(domain:a21350b6.no-smoke-walk.pages.dev)",
       "WebFetch(domain:82043df4.no-smoke-walk.pages.dev)",
       "WebFetch(domain:cd235151.no-smoke-walk.pages.dev)",
-      "WebFetch(domain:c4c24473.no-smoke-walk.pages.dev)"
+      "WebFetch(domain:c4c24473.no-smoke-walk.pages.dev)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": []
   },
