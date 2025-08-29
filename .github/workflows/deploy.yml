@@ -120,7 +120,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: no-smoke-walk-frontend
+          projectName: no-smoke-walk
           directory: ./frontend/out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 

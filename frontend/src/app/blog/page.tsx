@@ -43,6 +43,24 @@ const posts: BlogPost[] = [
     },
     readTime: 6,
     difficulty: "初級"
+  },
+  {
+    id: 3,
+    slug: "github-actions-test",
+    title: "GitHub Actionsテスト記事 - 自動デプロイ機能の動作確認",
+    description: "GitHub Actionsによる自動デプロイ機能のテストを兼ねた記事です。この記事が表示されれば、自動デプロイが正常に動作しています。",
+    content: "",
+    publishedAt: "2025-08-27",
+    updatedAt: "2025-08-27",
+    author: "No-Smoke Alert開発チーム",
+    tags: ["テスト", "GitHub Actions", "自動化", "開発"],
+    personas: ["developers", "system_admin"],
+    seo: {
+      ogImage: "/blog/images/003-cover.jpg",
+      keywords: ["GitHub Actions", "自動デプロイ", "テスト", "開発"]
+    },
+    readTime: 3,
+    difficulty: "初級"
   }
 ];
 

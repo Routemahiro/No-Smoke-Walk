@@ -15,7 +15,8 @@ export async function generateStaticParams() {
   // 現在の記事IDを手動で指定（実際にはAPIから取得）
   return [
     { id: '1' },
-    { id: '2' }
+    { id: '2' },
+    { id: '3' }
   ];
 }
 
@@ -62,6 +63,24 @@ export default async function BlogPostPage({ params }: PageProps) {
         keywords: ["受動喫煙", "子ども", "健康被害", "対策"]
       },
       readTime: 6,
+      difficulty: "初級" as const
+    },
+    {
+      id: 3,
+      slug: "github-actions-test",
+      title: "GitHub Actionsテスト記事 - 自動デプロイ機能の動作確認",
+      description: "GitHub Actionsによる自動デプロイ機能のテストを兼ねた記事です。この記事が表示されれば、自動デプロイが正常に動作しています。",
+      content: "<h1>GitHub Actionsテスト記事</h1><p>🚀 この記事は<strong>GitHub Actionsの自動デプロイ機能</strong>をテストするために作成されました。</p><h2>テストの目的</h2><ul><li>✅ GitHubへのpush時に自動ビルドが実行されるかの確認</li><li>✅ Cloudflare Pagesへの自動デプロイが動作するかの確認</li><li>✅ ブログページに新しい記事が表示されるかの確認</li><li>✅ 静的サイト生成（SSG）が正常に動作するかの確認</li></ul><h2>結論</h2><p>もしあなたがこの記事をブログページで読んでいるなら、<strong>GitHub Actionsによる自動デプロイは正常に動作しています！</strong> 🎉</p>",
+      publishedAt: "2025-08-27",
+      updatedAt: "2025-08-27",
+      author: "No-Smoke Alert開発チーム",
+      tags: ["テスト", "GitHub Actions", "自動化", "開発"],
+      personas: ["developers", "system_admin"],
+      seo: {
+        ogImage: "/blog/images/003-cover.jpg",
+        keywords: ["GitHub Actions", "自動デプロイ", "テスト", "開発"]
+      },
+      readTime: 3,
       difficulty: "初級" as const
     }
   ];
