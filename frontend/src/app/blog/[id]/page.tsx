@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getBlogPost, getRelatedPosts, getAllBlogPostFilenames } from '@/lib/blog';
 import { BlogCard } from '../components/BlogCard';
 import { PERSONAS } from '@/types/blog';
 
