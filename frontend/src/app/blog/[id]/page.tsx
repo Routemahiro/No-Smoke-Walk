@@ -5,9 +5,7 @@ import { BlogCard } from '../components/BlogCard';
 import { PERSONAS } from '@/types/blog';
 
 interface PageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 // 静的サイト生成のためのパス生成
@@ -21,7 +19,8 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const id = parseInt(params.id, 10);
+  const { id: idStr } = await params;
+  const id = parseInt(idStr, 10);
   
   if (isNaN(id)) {
     notFound();
