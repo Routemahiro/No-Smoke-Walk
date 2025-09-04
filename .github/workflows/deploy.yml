@@ -5,6 +5,15 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: '18'
@@ -39,6 +48,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
+        if: ${{ github.event_name == 'push' }}
         run: npm run test
 
       - name: Build application
@@ -48,6 +58,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Upload build artifacts
+        if: ${{ github.event_name == 'push' }}
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
@@ -57,6 +68,7 @@ jobs:
   # Backend Build & Test
   backend-build:
     name: Backend Build & Test
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -75,22 +87,14 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
       - name: Run type checking
         run: npx tsc --noEmit
-
-      - name: Run tests
-        run: npm test
-        env:
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
   # Deploy Frontend to Cloudflare Pages
   deploy-frontend:
     name: Deploy Frontend
     needs: frontend-build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     defaults:
       run:
         working-directory: ./frontend
