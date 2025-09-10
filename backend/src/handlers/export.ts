@@ -1,4 +1,4 @@
-import { ApiResponse, Env } from '../types';
+import { ApiResponse, Env, DbReport } from '../types';
 
 export async function handleExportCSV(request: Request, env: Env): Promise<Response> {
   try {
@@ -57,7 +57,7 @@ export async function handleExportCSV(request: Request, env: Env): Promise<Respo
       throw new Error(`Supabase query failed: ${response.status} ${response.statusText}`);
     }
 
-    const reports = await response.json();
+    const reports = await response.json() as DbReport[];
 
     // Generate CSV content
     const csvHeaders = [
@@ -71,7 +71,7 @@ export async function handleExportCSV(request: Request, env: Env): Promise<Respo
       '信頼度スコア'
     ];
 
-    const csvRows = reports?.map(report => [
+    const csvRows = (reports || []).map((report) => [
       report.id,
       new Date(report.reported_at).toLocaleString('ja-JP'),
       report.lat.toString(),
@@ -163,7 +163,7 @@ export async function handleExportExcel(request: Request, env: Env): Promise<Res
       throw new Error(`Supabase query failed: ${response.status} ${response.statusText}`);
     }
 
-    const reports = await response.json();
+    const reports = await response.json() as DbReport[];
 
     // For Excel, we'll create a simple XML-based Excel format (SpreadsheetML)
     const excelHeaders = [
@@ -177,7 +177,7 @@ export async function handleExportExcel(request: Request, env: Env): Promise<Res
       '信頼度スコア'
     ];
 
-    const excelRows = reports?.map(report => [
+    const excelRows = (reports || []).map((report) => [
       report.id,
       new Date(report.reported_at).toLocaleString('ja-JP'),
       report.lat,
