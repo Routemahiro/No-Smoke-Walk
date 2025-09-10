@@ -185,7 +185,7 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
     });
 
     if (getResponse.ok) {
-      const existingData = await getResponse.json();
+      const existingData = await getResponse.json() as Array<{ id: string; report_count: number }>;
       const existing = existingData[0];
       
       if (existing) {
