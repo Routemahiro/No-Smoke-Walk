@@ -2,8 +2,29 @@
 
 ## 📌 このファイルの使い方
 
-**コンテキストが埋まってきたら、このテンプレートを使って `SESSION_HANDOVER_YYYYMMDD_PARTX.md` を作成してください。**
-**新しいAIセッションの開始時に、このファイルを最初に読み込むだけで作業を継続できます。**
+### 1️⃣ セッション終了時（コンテキストが埋まってきたら）
+1. このテンプレートをコピー
+2. `docs/sessions/SESSION_HANDOVER_YYYYMMDD_PARTX.md` として保存
+3. 必要な情報を記入
+
+### 2️⃣ 新しいAIチャット開始時
+以下の2つのファイルを新しいチャットに渡してください：
+```
+1. やりたいことを記載したメッセージ
+2. docs/sessions/内の最新のSESSION_HANDOVER_*.md ファイル
+```
+
+これだけで前回の続きから作業を再開できます！
+
+### 📁 セッションファイルの保存場所
+```
+docs/
+├── sessions/                    # 🔴 ここに保存！
+│   ├── SESSION_HANDOVER_20251109_PART1.md
+│   ├── SESSION_HANDOVER_20251109_PART2.md
+│   └── SESSION_HANDOVER_20251110_PART1.md
+└── AI_HANDOVER_TEMPLATE.md     # このテンプレート
+```
 
 ---
 
@@ -323,11 +344,42 @@ AI: [最後の回答の要約]
 
 以下のコマンドで引き継ぎファイルの雛形を生成：
 
-```bash
+```powershell
 # PowerShell
 $date = Get-Date -Format "yyyyMMdd"
 $part = 1  # パート番号を適宜変更
-$filename = "docs/SESSION_HANDOVER_${date}_PART${part}.md"
+$filename = "docs/sessions/SESSION_HANDOVER_${date}_PART${part}.md"
+
+# sessionsフォルダがなければ作成
+New-Item -Path "docs/sessions" -ItemType Directory -Force | Out-Null
+
+# テンプレートをコピー
 Copy-Item "docs/AI_HANDOVER_TEMPLATE.md" $filename
-Write-Host "引き継ぎファイルを作成しました: $filename"
+Write-Host "✅ 引き継ぎファイルを作成しました: $filename"
+Write-Host "📝 ファイルを編集して、作業内容を記入してください"
 ```
+
+## 💡 新しいチャットでの使い方（詳細）
+
+### 方法1: シンプルな開始（推奨）
+新しいチャットで以下のように伝える：
+```
+以下のセッション引き継ぎファイルから作業を継続してください：
+docs/sessions/SESSION_HANDOVER_20251110_PART1.md
+
+今回やりたいこと：
+- [具体的なタスク]
+```
+
+### 方法2: AI_HANDOVER_TEMPLATE.mdも一緒に渡す
+```
+引き継ぎテンプレート: docs/AI_HANDOVER_TEMPLATE.md
+前回のセッション: docs/sessions/SESSION_HANDOVER_20251110_PART1.md
+
+これらを参照して、[やりたいこと]を実行してください。
+```
+
+### 📌 重要なポイント
+- **最新のセッションファイル**を使用すること
+- ファイルパスは `docs/sessions/` から始まること
+- やりたいことは**具体的に**記載すること
