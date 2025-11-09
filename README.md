@@ -6,6 +6,20 @@
 
 市民が歩きタバコや禁煙エリアでの喫煙、ポイ捨てを発見した際に簡単に報告できるWebアプリケーションです。報告されたデータはヒートマップで可視化され、行政指導の資料として活用されます。
 
+## 人間向けの説明
+初回は「やりたいこと」＋AI_HANDOVER_TEMPLATE.mdを渡す。
+その後は、やりたいこと + docs/sessions/最新のSESSION_HANDOVER_*.mdを渡すようにすればOK。
+
+例：
+以下のセッション引き継ぎファイルから作業を継続してください：
+docs/sessions/SESSION_HANDOVER_20251110_PART1.md
+
+今回やりたいこと：
+- ○○機能を実装
+
+CSVデータの出力は以下のデータを元に行うこと。
+E:\mega\No-Smoke-Walk\docs\CSV_EXPORT_USER_GUIDE.md
+
 ## 主な機能
 
 - 📍 **位置情報付き報告**: GPS機能を使った正確な位置での報告

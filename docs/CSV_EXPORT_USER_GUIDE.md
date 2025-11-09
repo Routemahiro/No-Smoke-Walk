@@ -11,9 +11,21 @@
 
 ### 必要なもの
 
-1. **シークレットキー**（管理者から提供されます）
+1. **シークレットキー**（`.secret.local`ファイルに保存されています）
 2. **Webブラウザ** または **コマンドラインツール**
 3. **Excel** または **Googleスプレッドシート**（データ閲覧用）
+
+### シークレットキーの確認方法
+
+```powershell
+# PowerShellで確認
+Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY"
+
+# または直接ファイルを開く
+notepad .secret.local
+```
+
+⚠️ **重要**: `.secret.local`ファイルはGitリポジトリに含まれません（セキュリティのため）
 
 ### ダウンロード用URL
 
@@ -27,13 +39,16 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=あな
 
 ### ステップ1: ブラウザでアクセス
 
-以下のURLをコピーして、ブラウザのアドレスバーに貼り付けてください：
+1. まず `.secret.local` ファイルからシークレットキーを取得
+   ```powershell
+   # キーをクリップボードにコピー
+   (Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY=(.+)" | ForEach-Object { $_.Matches[0].Groups[1].Value }) | Set-Clipboard
+   ```
 
-```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY
-```
-
-**YOUR_SECRET_KEY** の部分を、管理者から提供されたシークレットキーに置き換えてください。
+2. 以下のURLのYOUR_SECRET_KEYを置き換えてアクセス：
+   ```
+   https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY
+   ```
 
 ### ステップ2: ファイルを保存
 
@@ -52,48 +67,48 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_S
 
 #### 過去30日間のデータ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=30
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=30
 ```
 
 #### 過去7日間のデータ（週次レポート用）
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=7
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=7
 ```
 
 #### 特定の日付範囲
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&start_date=2025-01-01&end_date=2025-12-31
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&start_date=2025-01-01&end_date=2025-12-31
 ```
 
 ### カテゴリ別にダウンロード
 
 #### 歩きタバコのみ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&category=walk_smoke
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&category=walk_smoke
 ```
 
 #### 立ち止まり喫煙のみ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&category=stand_smoke
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&category=stand_smoke
 ```
 
 ### 地域を絞ってダウンロード
 
 #### 大阪府のデータのみ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&prefecture=大阪府
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&prefecture=大阪府
 ```
 
 #### 大阪市のデータのみ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&city=大阪市
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&city=大阪市
 ```
 
 ### 複合条件（組み合わせ）
 
 #### 過去30日間の大阪市の歩きタバコデータ
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=30&city=大阪市&category=walk_smoke
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=30&city=大阪市&category=walk_smoke
 ```
 
 ---
@@ -135,12 +150,12 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_S
 
 #### 週次レポート（毎週月曜日に実行）
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=7
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=7
 ```
 
 #### 月次レポート（月初に実行）
 ```
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=30
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=30
 ```
 
 ### Excel でのデータ分析
@@ -173,18 +188,34 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_S
 
 ## 🔒 セキュリティについて
 
+### シークレットキーの保管場所
+
+シークレットキーは **`.secret.local`** ファイルに安全に保管されています：
+- **場所**: プロジェクトルートディレクトリ
+- **特徴**: Gitリポジトリには含まれない（.gitignoreで除外）
+- **確認方法**: 
+  ```powershell
+  # ファイルの内容を確認
+  Get-Content .secret.local
+  
+  # キーだけを取得
+  Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY"
+  ```
+
 ### シークレットキーの管理
 
 ⚠️ **重要な注意事項:**
-- シークレットキーは**絶対に第三者に共有しない**でください
+- `.secret.local`ファイルは**絶対にGitにコミットしない**でください
+- シークレットキーは**第三者に共有しない**でください
 - メールやチャットでキーを送信しないでください
 - ブラウザの履歴に残る可能性があるため、共用PCでは注意してください
 
 ### セキュアな利用方法
 
 1. **個人PCでのみアクセス**
-2. **ダウンロード後はブラウザ履歴をクリア**
-3. **定期的にシークレットキーの変更を依頼**
+2. **`.secret.local`ファイルはローカルに保管**
+3. **ダウンロード後はブラウザ履歴をクリア**
+4. **定期的にシークレットキーを変更**
 
 ---
 
@@ -224,21 +255,28 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_S
 
 ### よく使うURLリスト（コピー用）
 
+```powershell
+# まずシークレットキーを変数に設定
+$secret = (Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY=(.+)" | ForEach-Object { $_.Matches[0].Groups[1].Value })
+
+# 以下のURLが使用可能になります：
+```
+
 ```
 # 全データ
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]
 
 # 過去7日間
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=7
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=7
 
 # 過去30日間
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&days=30
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&days=30
 
 # 今月のデータ（月初から今日まで）
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&start_date=2025-11-01
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&start_date=2025-11-01
 
 # 大阪市のみ
-https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY&city=大阪市
+https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=[.secret.localのキー]&city=大阪市
 ```
 
 ---
@@ -269,19 +307,22 @@ https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_S
 ### コマンドライン（Windows PowerShell）
 
 ```powershell
+# シークレットキーを読み込み
+$secret = (Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY=(.+)" | ForEach-Object { $_.Matches[0].Groups[1].Value })
+
 # データダウンロード
-Invoke-WebRequest -Uri "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY" -OutFile "reports.csv"
+Invoke-WebRequest -Uri "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=$secret" -OutFile "reports.csv"
 
 # 日付付きファイル名で保存
 $date = Get-Date -Format "yyyyMMdd"
-Invoke-WebRequest -Uri "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=YOUR_SECRET_KEY" -OutFile "reports_$date.csv"
+Invoke-WebRequest -Uri "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=$secret" -OutFile "reports_$date.csv"
 ```
 
 ### 自動化スクリプト
 
 ```powershell
-# 毎週月曜日に自動ダウンロード
-$secret = "YOUR_SECRET_KEY"
+# シークレットキーを.secret.localから読み込み
+$secret = (Get-Content .secret.local | Select-String "EXPORT_SECRET_KEY=(.+)" | ForEach-Object { $_.Matches[0].Groups[1].Value })
 $url = "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/export/csv?secret=$secret&days=7"
 $date = Get-Date -Format "yyyyMMdd"
 $filename = "weekly_report_$date.csv"

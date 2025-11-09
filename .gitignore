@@ -28,6 +28,10 @@ backend/.env.local
 database/.env
 database/supabase/.env
 
+# Secret files
+.secret.local
+*.secret
+
 # IDE
 .vscode/
 .idea/
