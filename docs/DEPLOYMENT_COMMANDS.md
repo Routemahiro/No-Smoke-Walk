@@ -58,26 +58,56 @@ echo "進行状況はこちらで確認できます："
 echo "https://github.com/[ユーザー名]/No-Smoke-Walk/actions"
 ```
 
-### ステップ3: 手動デプロイ（GitHub Actions失敗時のみ）
+**⚠️ 現在の状況（2025-11-10時点）**
+- GitHub ActionsのSecrets設定が未完了のため、自動デプロイは動作していません
+- 現在は**手動デプロイ方式**を使用しています
+- 以下の手動デプロイ手順に従ってください
 
-**⚠️ 通常はGitHub Actionsが自動デプロイするため、以下は緊急時のみ実行**
+### ステップ3: 手動デプロイ（現在の標準手順）
+
+**✅ 現在はこちらの手順でデプロイしてください**
 
 #### フロントエンド（Cloudflare Pages）デプロイ
 
+**前提条件: Wranglerへのログイン**
 ```bash
+# Wranglerにログイン（初回のみ、またはセッション切れ時）
+npx wrangler logout  # 既存セッションをクリア
+npx wrangler login   # 新規ログイン（ブラウザが開く）
+# ブラウザでCloudflareにログインして認証を完了
+```
+
+**デプロイ実行**
+```powershell
 # フロントエンドディレクトリに移動
 cd frontend
+
+# 既存のビルド成果物を削除（Windows PowerShell）
+Remove-Item -Path out -Recurse -Force -ErrorAction SilentlyContinue
 
 # ビルド実行
 npm run build
 
 # Cloudflare Pagesへデプロイ
 cd out
-npx wrangler pages deploy . --project-name=no-smoke-walk --branch=main
+npx wrangler pages deploy . --project-name=no-smoke-walk
 
 # 結果確認
-echo "✅ フロントエンドデプロイ完了"
-echo "URL: https://no-smoke-alert.com"
+# デプロイURLが表示される（例: https://xxxxxxxx.no-smoke-walk.pages.dev）
+# 本番URL: https://no-smoke-alert.com（数分後に自動反映）
+```
+
+**トラブルシューティング:**
+```powershell
+# ログインエラーが出る場合
+npx wrangler logout
+npx wrangler login
+
+# ビルドエラーが出る場合
+Remove-Item -Path out -Recurse -Force
+Remove-Item -Path .next -Recurse -Force
+npm ci
+npm run build
 ```
 
 #### バックエンド（Cloudflare Workers）デプロイ
