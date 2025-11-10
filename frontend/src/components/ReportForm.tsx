@@ -137,7 +137,9 @@ export function ReportForm() {
             </label>
             <p className="text-xs text-blue-700 mt-1">
               {autoFetchEnabled 
-                ? '✓ 次回から自動的に位置情報を取得します' 
+                ? (location 
+                    ? '✓ 自動的に位置情報を取得しています' 
+                    : '✓ 次回から自動的に位置情報を取得します')
                 : '✗ 手動で「現在位置を表示」ボタンを押す必要があります'}
             </p>
           </div>
