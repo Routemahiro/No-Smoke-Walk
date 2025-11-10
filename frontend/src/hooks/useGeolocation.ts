@@ -198,13 +198,18 @@ export function useGeolocation(enableHighAccuracy = true) {
     }
   }, [watchId]);
 
-  // Auto-get location on mount if supported
+  // Auto-get location on mount if user has enabled auto-fetch
   useEffect(() => {
     // Check if we're in the browser environment
     if (typeof window === 'undefined') return;
     
+    // Check localStorage for auto-fetch setting
+    const autoFetchEnabled = localStorage.getItem('geolocation-auto-fetch') === 'true';
+    
     console.log('📍 useGeolocation hook mounted, navigator.geolocation available:', !!navigator.geolocation);
-    if (navigator.geolocation) {
+    console.log('📍 Auto-fetch enabled:', autoFetchEnabled);
+    
+    if (navigator.geolocation && autoFetchEnabled) {
       console.log('📍 Auto-triggering location fetch on mount');
       getCurrentLocation();
     }

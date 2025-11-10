@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +34,24 @@ export function ReportForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+
+  // Load auto-fetch setting from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('geolocation-auto-fetch');
+      setAutoFetchEnabled(saved === 'true');
+    }
+  }, []);
+
+  // Save auto-fetch setting to localStorage when changed
+  const toggleAutoFetch = (enabled: boolean) => {
+    setAutoFetchEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('geolocation-auto-fetch', enabled.toString());
+      console.log('📍 Auto-fetch setting saved:', enabled);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!location || !selectedCategory) return;
@@ -94,6 +112,36 @@ export function ReportForm() {
 
         {/* Location Status */}
         <div className="space-y-2">
+          {/* Auto-fetch Toggle */}
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">
+                  自動的に現在位置を取得
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleAutoFetch(!autoFetchEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  autoFetchEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    autoFetchEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+            <p className="text-xs text-blue-700 mt-1">
+              {autoFetchEnabled 
+                ? '✓ 次回から自動的に位置情報を取得します' 
+                : '✗ 手動で「現在位置を表示」ボタンを押す必要があります'}
+            </p>
+          </div>
+
           {locationLoading && (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -129,7 +177,17 @@ export function ReportForm() {
             </Alert>
           )}
           
-          
+          {!location && !locationLoading && !locationError && (
+            <Button
+              onClick={getCurrentLocation}
+              variant="outline"
+              className="w-full"
+              size="sm"
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              現在位置を表示
+            </Button>
+          )}
         </div>
 
         {/* Category Selection */}
