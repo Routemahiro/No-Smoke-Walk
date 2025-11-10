@@ -54,7 +54,7 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
       throw new Error(`Supabase query failed: ${dbResponse.status} ${dbResponse.statusText}`);
     }
 
-    const reports = await dbResponse.json();
+    const reports = await dbResponse.json() as Array<{ lat: number; lon: number; category: ReportCategory }>;
 
     // Aggregate reports by grid (simplified 1km grid)
     const gridSize = 0.009; // Approximately 1km at Osaka latitude
@@ -65,7 +65,7 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
       categories: Record<string, number>;
     }>();
 
-    reports?.forEach(report => {
+    (reports || []).forEach((report) => {
       const gridLat = Math.round(report.lat / gridSize) * gridSize;
       const gridLon = Math.round(report.lon / gridSize) * gridSize;
       const gridKey = `${gridLat},${gridLon}`;
@@ -154,16 +154,16 @@ export async function handleHeatmapStats(request: Request, env: Env): Promise<Re
       throw new Error(`Supabase query failed: ${statsResponse.status} ${statsResponse.statusText}`);
     }
 
-    const stats = await statsResponse.json();
+    const stats = await statsResponse.json() as Array<{ category: ReportCategory; prefecture: string; city: string }>; 
 
     // Calculate statistics
-    const totalReports = stats?.length || 0;
-    const categoryBreakdown = stats?.reduce((acc, report) => {
+    const totalReports = (stats || []).length || 0;
+    const categoryBreakdown = (stats || []).reduce((acc, report) => {
       acc[report.category] = (acc[report.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>) || {};
 
-    const locationBreakdown = stats?.reduce((acc, report) => {
+    const locationBreakdown = (stats || []).reduce((acc, report) => {
       const locationKey = `${report.prefecture} ${report.city}`;
       acc[locationKey] = (acc[locationKey] || 0) + 1;
       return acc;
