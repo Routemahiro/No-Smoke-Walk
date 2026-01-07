@@ -2,12 +2,14 @@
 
 ## 現在のタスク
 
-- [ ] ヒートマップ仕様統一（本番Workers `/api/heatmap` に `userLat/userLon/radius` を追加し、`days/category/min_reports` と両立。グリッド集約を 75m 前後にして過剰な集約を解消、`densityRatio` を返す）
 - [ ] 位置情報の許可ダイアログが毎回出る問題を改善（自動取得ONでも毎回許可が出る原因調査。Permissions API/取得タイミング/最終位置の活用などでUX改善）
 
 ---
 
 ## 完了したタスク
+
+### ヒートマップ仕様統一（バランス案） - 2026-01-07 完了
+- [x] 本番Workers `/api/heatmap` の集約を改善（`userLat/userLon/radius` 対応、メートル基準グリッド、`densityRatio` 返却）
 
 ### 位置情報自動取得設定機能 - 2025-11-10 完了
 - [x] localStorageで自動取得設定を保存
@@ -31,5 +33,5 @@
 
 ---
 
-**最終更新:** 2025-11-09
+**最終更新:** 2026-01-07
 
