@@ -79,3 +79,30 @@
 **作成日:** 2025-11-10
 **作成者:** AI (鈴垣 美影)
 
+---
+
+## 2026-01-07
+
+### 本番Workersのヒートマップ仕様統一（周辺モード対応）
+
+**実施内容:**
+- 本番Workers（`backend/src/index.ts` → `backend/src/handlers/heatmap.ts`）の `/api/heatmap` を改善
+  - `userLat/userLon` を受け取り、現在地（または表示位置）周辺のデータ取得に対応
+  - `radius`（m）で半径フィルタ（デフォルト: 800m）
+  - グリッド集約を距離ベース（m）に変更し、過剰な集約（旧: 約1km）を緩和
+    - 周辺モード: 75m（デフォルト）
+    - 広域モード: 250m（デフォルト）
+  - `densityRatio`（周辺内での比率）を返却して、フロントの重み付けが本番でも成立
+- backendの型チェックが通るよう、abuse guard更新処理の型を軽微修正
+
+**変更ファイル:**
+- backend/src/handlers/heatmap.ts
+- backend/src/types/index.ts
+- backend/src/handlers/reports.ts
+
+**効果:**
+- 「点が集約されすぎて場所が不正確」という課題を、周辺モードで大きく改善
+- フロントの `densityRatio` 優先のヒートマップ重み付けが本番でも機能
+
+**コミット:**
+- d72765a: feat(backend): improve heatmap aggregation

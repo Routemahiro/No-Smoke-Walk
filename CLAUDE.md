@@ -303,6 +303,7 @@ wrangler deploy
 - 2025-08-02 ブログ機能実装完了（設計: blog/{n} + タグシステム、静的生成対応、フィルタ機能、2記事サンプル、完全動作確認済み）
 - 2025-08-02 トップページとフッターにブログナビゲーションリンク追加（「ヒートマップを見る」「ブログ・記事を読む」のナビゲーション、フッター：利用規約/プライバシーポリシー/ブログ・記事）
 - 2025-08-27 GitHub Actions自動デプロイ設定とテスト記事作成（.github/workflows/deploy.yml修正、003-github-actions-test.md作成、ローカル動作確認済み、GitHub認証設定のみ残作業、詳細は docs/GITHUB_ACTIONS_SETUP_HANDOVER.md 参照）
+- 2026-01-07 backend/src/handlers/heatmap.ts 本番Workersのヒートマップ集約を改善（userLat/userLon/radius対応、75m級グリッド集約、densityRatio返却）
 
 ## 🚨 重要なエラー対策・教訓（2025-08-02 ブログ機能実装時）
 
