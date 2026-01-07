@@ -23,6 +23,8 @@ backend/worker/
 .env.test.local
 .env.production.local
 backend/.env.local
+.dev.vars
+backend/.dev.vars
 
 # Database
 database/.env
