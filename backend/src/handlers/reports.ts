@@ -161,7 +161,7 @@ async function checkAbuseGuard(env: Env, ipHash: string, fpHash: string): Promis
       return { allowed: true }; // Fail open for availability
     }
 
-    const data = await response.json();
+    const data = await response.json() as Array<{ report_count: number }>;
     const reportCount = data?.[0]?.report_count || 0;
     return { allowed: reportCount < 5 }; // Max 5 reports per 10 minutes
   } catch (error) {
@@ -174,6 +174,12 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
   const windowStart = new Date(Date.now() - 10 * 60 * 1000); // 10 minutes ago
 
   try {
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      console.warn('SUPABASE_SERVICE_ROLE_KEY is not set; skipping abuse guard update');
+      return;
+    }
+
     // Try to get existing record
     const getResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard?select=id,report_count&or=(ip_hash.eq.${ipHash},fp_hash.eq.${fpHash})&window_start=gte.${windowStart.toISOString()}`, {
       method: 'GET',
@@ -193,8 +199,8 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
         await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard?id=eq.${existing.id}`, {
           method: 'PATCH',
           headers: {
-            'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-            'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -207,8 +213,8 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
         await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard`, {
           method: 'POST',
           headers: {
-            'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-            'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({

@@ -37,6 +37,7 @@ export interface HeatmapResponse {
       count: number;
       category?: ReportCategory | null;
       categories?: Record<string, number>;
+      densityRatio?: number;
       intensity?: number;
     };
   }>;
