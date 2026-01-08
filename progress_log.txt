@@ -106,3 +106,24 @@
 
 **コミット:**
 - d72765a: feat(backend): improve heatmap aggregation
+
+---
+
+## 2026-01-08
+
+### 引き継ぎ資料/デプロイ状況ドキュメントの整合性メンテ
+
+**実施内容:**
+- `docs/sessions/SESSION_HANDOVER_20260108_PART1.md` の「origin/mainよりahead」断言を、`git status -sb` で確認する手順に変更
+- 引き継ぎ資料のコミット一覧に `docs: 引き継ぎ資料作成` を追記
+- 未追跡だった `DEPLOYMENT_STATUS.md` を追跡してコミット
+
+**変更ファイル:**
+- docs/sessions/SESSION_HANDOVER_20260108_PART1.md
+- DEPLOYMENT_STATUS.md
+- TODO.md
+
+**コミット:**
+- 3157cb6: docs: start doc consistency update
+- 82f0273: docs: track deployment status
+- 80ae8b6: docs: fix handover consistency
