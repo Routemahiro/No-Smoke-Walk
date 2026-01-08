@@ -80,6 +80,7 @@ TODO.md                          # heatmap完了マーク + 次タスク残し
 ## 🧾 Gitコミット履歴（直近）
 
 ```
+1836790 docs: 引き継ぎ資料作成
 8b3422c docs: mark heatmap TODO done
 3115409 chore: ignore wrangler dev vars
 e23ccf5 docs: update progress log
@@ -87,7 +88,7 @@ d72765a feat(backend): improve heatmap aggregation
 8241c77 docs: update TODO
 ```
 
-※ローカル `main` が `origin/main` より ahead になっている。push前提なら履歴書き換えは避けること。
+※作業開始時に `git status -sb` で `origin/main` との差分（ahead/behind）を確認すること。push前提なら履歴書き換えは避けること。
 
 ## ✅ 動作確認メモ（次のAIがすぐ再現できる手順）
 
