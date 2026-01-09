@@ -158,7 +158,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: ./backend
-          secrets: |
-            DATABASE_URL
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # NOTE:
+          # - This workflow previously required DATABASE_URL as a GitHub secret,
+          #   but the Workers codebase does not reference it.
+          # - Requiring a missing secret blocks backend deploy entirely, causing production drift.
