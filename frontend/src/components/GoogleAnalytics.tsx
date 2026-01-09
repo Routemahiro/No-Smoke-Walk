@@ -63,8 +63,19 @@ export const trackReportSubmission = (category: string, location?: { lat: number
 };
 
 // Track map interactions
-export const trackMapInteraction = (action: string) => {
-  trackEvent(action, 'map_interaction', undefined, 1);
+export const trackMapInteraction = (action: string, params?: Record<string, unknown>) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', action, {
+      event_category: 'map_interaction',
+      value: 1,
+      ...(params ?? {}),
+    });
+    return;
+  }
+
+  // Fallback (e.g. during SSR or if gtag isn't ready yet)
+  const label = params ? JSON.stringify(params) : undefined;
+  trackEvent(action, 'map_interaction', label, 1);
 };
 
 // Global type declarations for gtag
