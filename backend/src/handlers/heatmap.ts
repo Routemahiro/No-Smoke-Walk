@@ -194,10 +194,38 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
     });
 
     if (!dbResponse.ok) {
-      throw new Error(`Supabase query failed: ${dbResponse.status} ${dbResponse.statusText}`);
+      const bodyText = await dbResponse.text().catch(() => '');
+      console.error('Supabase query failed (heatmap)', {
+        status: dbResponse.status,
+        statusText: dbResponse.statusText,
+        bodyPreview: bodyText.slice(0, 300),
+      });
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Supabase query failed: ${dbResponse.status} ${dbResponse.statusText}`
+      }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    const reports = await dbResponse.json() as Array<{ lat: number; lon: number; category: ReportCategory }>;
+    let reports: Array<{ lat: number; lon: number; category: ReportCategory }>;
+    try {
+      reports = await dbResponse.json() as Array<{ lat: number; lon: number; category: ReportCategory }>;
+    } catch (parseError) {
+      const bodyText = await dbResponse.text().catch(() => '');
+      console.error('Supabase response JSON parse failed (heatmap)', {
+        parseError,
+        bodyPreview: bodyText.slice(0, 300),
+      });
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Supabase response parse failed'
+      }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     // Apply precise radius filtering (Haversine) for nearby mode
     const filteredReports = (userLat !== null && userLon !== null && radiusMeters !== null)
