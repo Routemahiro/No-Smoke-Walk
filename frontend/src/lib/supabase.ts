@@ -36,6 +36,8 @@ export const apiClient = {
     min_reports?: number;
     userLat?: number;
     userLon?: number;
+    radius?: number;
+    grid_m?: number;
   }) {
     const searchParams = new URLSearchParams();
     
@@ -44,6 +46,8 @@ export const apiClient = {
     if (params?.min_reports) searchParams.set('min_reports', params.min_reports.toString());
     if (params?.userLat) searchParams.set('userLat', params.userLat.toString());
     if (params?.userLon) searchParams.set('userLon', params.userLon.toString());
+    if (params?.radius) searchParams.set('radius', params.radius.toString());
+    if (params?.grid_m) searchParams.set('grid_m', params.grid_m.toString());
     
     const url = `${this.baseUrl}/api/heatmap${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
     

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/lib/supabase';
 import { HeatmapData } from '@/types';
 
+const DEFAULT_NEARBY_RADIUS_METERS = 400;
+
 interface HeatmapState {
   data: HeatmapData | null;
   loading: boolean;
@@ -19,6 +21,8 @@ interface HeatmapFilters {
     lat: number;
     lon: number;
   };
+  radiusMeters?: number;
+  gridMeters?: number;
 }
 
 export function useHeatmap(filters: HeatmapFilters = {}) {
@@ -34,13 +38,16 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
 
     try {
       const mergedFilters = { ...filters, ...customFilters };
+      const hasUserLocation = !!mergedFilters.userLocation;
       // Convert minReports to min_reports to match API expectations
       const params = {
         category: mergedFilters.category,
         days: mergedFilters.days,
         min_reports: mergedFilters.minReports,
         userLat: mergedFilters.userLocation?.lat,
-        userLon: mergedFilters.userLocation?.lon
+        userLon: mergedFilters.userLocation?.lon,
+        radius: hasUserLocation ? (mergedFilters.radiusMeters ?? DEFAULT_NEARBY_RADIUS_METERS) : undefined,
+        grid_m: mergedFilters.gridMeters,
       };
       
       console.log('🌍 Fetching heatmap data with params:', params);

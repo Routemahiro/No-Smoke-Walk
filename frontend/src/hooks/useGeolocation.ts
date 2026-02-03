@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Location } from '@/types';
 
+const AUTO_FETCH_KEY = 'geolocation-auto-fetch';
+const LAST_LOCATION_KEY = 'geolocation-last-location';
+
 interface GeolocationState {
   location: Location | null;
   error: string | null;
@@ -18,6 +21,33 @@ export function useGeolocation(enableHighAccuracy = true) {
     isWatching: false,
   });
   const [watchId, setWatchId] = useState<number | null>(null);
+
+  const saveLastLocation = useCallback((location: Location) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({ ...location, ts: Date.now() }));
+    } catch {
+      // ignore storage errors (private mode, quota, etc.)
+    }
+  }, []);
+
+  const loadLastLocation = useCallback((): Location | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(LAST_LOCATION_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as Partial<Location> & { ts?: number };
+      const lat = typeof parsed.lat === 'number' ? parsed.lat : null;
+      const lon = typeof parsed.lon === 'number' ? parsed.lon : null;
+      const accuracy = typeof parsed.accuracy === 'number' ? parsed.accuracy : undefined;
+      if (lat === null || lon === null) return null;
+      // Validate coordinates are within Japan bounds
+      if (lat < 24 || lat > 46 || lon < 123 || lon > 146) return null;
+      return { lat, lon, accuracy };
+    } catch {
+      return null;
+    }
+  }, []);
 
   const getCurrentLocation = useCallback(() => {
     if (typeof window === 'undefined' || !navigator.geolocation) {
@@ -71,6 +101,7 @@ export function useGeolocation(enableHighAccuracy = true) {
           loading: false,
           error: null,
         }));
+        saveLastLocation(newLocation);
       },
       (error) => {
         let errorMessage = '位置情報の取得に失敗しました';
@@ -95,7 +126,7 @@ export function useGeolocation(enableHighAccuracy = true) {
       },
       options
     );
-  }, [enableHighAccuracy]);
+  }, [enableHighAccuracy, saveLastLocation]);
 
 
   const clearError = () => {
@@ -117,6 +148,7 @@ export function useGeolocation(enableHighAccuracy = true) {
       location,
       error: null,
     }));
+    saveLastLocation(location);
   };
 
   const startWatching = useCallback(() => {
@@ -159,6 +191,7 @@ export function useGeolocation(enableHighAccuracy = true) {
           location: newLocation,
           error: null,
         }));
+        saveLastLocation(newLocation);
       },
       (error) => {
         console.error('📍 Watch position error:', error);
@@ -187,7 +220,7 @@ export function useGeolocation(enableHighAccuracy = true) {
     );
 
     setWatchId(id);
-  }, [enableHighAccuracy, watchId]);
+  }, [enableHighAccuracy, saveLastLocation, watchId]);
 
   const stopWatching = useCallback(() => {
     if (watchId && typeof window !== 'undefined') {
@@ -204,24 +237,74 @@ export function useGeolocation(enableHighAccuracy = true) {
     if (typeof window === 'undefined') return;
     
     // Check localStorage for auto-fetch setting
-    const autoFetchEnabled = localStorage.getItem('geolocation-auto-fetch') === 'true';
+    const autoFetchEnabled = localStorage.getItem(AUTO_FETCH_KEY) === 'true';
     
     console.log('📍 useGeolocation hook mounted, navigator.geolocation available:', !!navigator.geolocation);
     console.log('📍 Auto-fetch enabled:', autoFetchEnabled);
-    
-    if (navigator.geolocation && autoFetchEnabled) {
-      console.log('📍 Auto-triggering location fetch on mount');
-      getCurrentLocation();
+    let cancelled = false;
+
+    if (autoFetchEnabled) {
+      // 1) Immediately use last saved location (no permission prompt)
+      const saved = loadLastLocation();
+      if (saved) {
+        setState(prev => ({
+          ...prev,
+          location: prev.location ?? saved,
+          error: null,
+        }));
+      }
+
+      // 2) Only auto-refresh location when permission is already granted
+      //    (avoids re-triggering the permission prompt on some browsers/OS)
+      const permissionsApi = navigator.permissions?.query ? navigator.permissions : null;
+      if (navigator.geolocation && permissionsApi) {
+        (async () => {
+          try {
+            const status = await permissionsApi.query({ name: 'geolocation' as PermissionName });
+            if (cancelled) return;
+            if (status.state !== 'granted') return;
+
+            const options: PositionOptions = {
+              enableHighAccuracy,
+              timeout: 8000,
+              maximumAge: 5 * 60 * 1000, // allow cached position up to 5 minutes
+            };
+
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                if (cancelled) return;
+                const { latitude: lat, longitude: lon, accuracy } = position.coords;
+                // Validate Japan bounds
+                if (lat < 24 || lat > 46 || lon < 123 || lon > 146) return;
+                const newLocation = { lat, lon, accuracy };
+                setState(prev => ({
+                  ...prev,
+                  location: newLocation,
+                  error: null,
+                }));
+                saveLastLocation(newLocation);
+              },
+              () => {
+                // Silent fail: user can manually retry via button
+              },
+              options
+            );
+          } catch {
+            // Permissions API errors: do nothing (avoid prompting)
+          }
+        })();
+      }
     }
 
     // Cleanup watch on unmount
     return () => {
+      cancelled = true;
       if (watchId && typeof window !== 'undefined') {
         console.log('📍 Cleaning up position watch on unmount');
         navigator.geolocation.clearWatch(watchId);
       }
     };
-  }, [watchId, getCurrentLocation]);
+  }, [enableHighAccuracy, loadLastLocation, saveLastLocation, watchId]);
 
   // Debug log current state (only in browser)
   if (typeof window !== 'undefined') {
