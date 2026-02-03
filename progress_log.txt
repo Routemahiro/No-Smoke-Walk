@@ -146,3 +146,25 @@
 **コミット:**
 - e81d0e3: docs: update TODO
 - 34fcb3d: docs: clarify handover prerequisites
+
+---
+
+## 2026-02-03
+
+### 位置情報許可ダイアログ頻発のUX改善（バランス案）+ 周辺デフォルト半径400m
+
+**実施内容:**
+- auto-fetch ON のとき、マウント直後に許可ダイアログを出しにいかないように改善
+  - 最後に保存した位置を即時採用（localStorage）
+  - Permissions API が使えて `granted` の場合のみ、サイレントに位置を更新
+- ヒートマップ取得パラメータに `radius` を追加し、周辺モードのデフォルト半径を **400m** に
+
+**変更ファイル:**
+- frontend/src/hooks/useGeolocation.ts
+- frontend/src/hooks/useHeatmap.ts
+- frontend/src/lib/supabase.ts
+- TODO.md
+
+**コミット:**
+- 9a56bea: docs: update TODO
+- 39b4d95: fix(frontend): reduce geolocation prompts
