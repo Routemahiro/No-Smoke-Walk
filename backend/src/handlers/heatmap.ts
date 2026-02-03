@@ -182,11 +182,13 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
     }
 
     // Execute query via HTTP API
+    // Use service role key for read if available (production RLS differences can break anon reads)
+    const readKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
     const dbResponse = await fetch(queryUrl, {
       method: 'GET',
       headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'apikey': readKey,
+        'Authorization': `Bearer ${readKey}`,
         'Content-Type': 'application/json'
       }
     });
@@ -313,11 +315,12 @@ export async function handleHeatmapStats(request: Request, env: Env): Promise<Re
     // Get statistics for the last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     
+    const readKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
     const statsResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports?select=category,prefecture,city&reported_at=gte.${thirtyDaysAgo.toISOString()}`, {
       method: 'GET',
       headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'apikey': readKey,
+        'Authorization': `Bearer ${readKey}`,
         'Content-Type': 'application/json'
       }
     });
