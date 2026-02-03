@@ -196,3 +196,7 @@
 - e3ad22c: fix(backend): use service key for heatmap reads
 - 4add1f2: fix(backend): surface supabase errors for heatmap
 - b40a620: fix(frontend): fallback on upstream heatmap failures
+
+**追記（復旧）:**
+- Supabaseプロジェクト `no-smoke-walk-osaka` が paused だったため、Dashboard で resume して復旧
+- 復旧後、Workers `/api/heatmap` は `success:true` を確認
