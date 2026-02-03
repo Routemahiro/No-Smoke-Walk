@@ -14,6 +14,21 @@
 - Windows PowerShell前提
 - 開発ルール: `CLAUDE.md` とユーザールールに従う
 
+## 🧩 前提（環境変数/依存）※まずここを満たす
+
+### backend（wrangler dev / Workers相当）
+
+- **必須**: `backend/.dev.vars` に `SUPABASE_URL` / `SUPABASE_ANON_KEY`
+  - これが無い（or 壊れている）と `/api/heatmap` 等が Supabase REST を叩けず失敗する
+- **推奨**: `ENVIRONMENT`（例: `local`）/ `ABUSE_GUARD`（例: `false`）
+  - `ABUSE_GUARD` は挙動差分が出るので、検証時は明示すると迷いが減る
+- **注意**: `.env.local` の内容をコピーする際に、改行欠損で `ABUSE_GUARD=falseSUPABASE_URL=...` のように“結合”される事故があり得る
+  - 切り分けは `/api/debug/env` の `hasSupabaseUrl` を見る
+
+### frontend（Next.js）
+
+- `frontend` は通常の `npm run dev` でOK（この引き継ぎでは主に geolocation / heatmap UI が論点）
+
 ## 📌 このセッションでユーザーが気にしていたこと（要点）
 
 1. **本番のヒートマップが「点が集約されすぎ」**で、実際の多い場所が地図的に正確に見えない
@@ -29,6 +44,7 @@
 - なおリポジトリにはバックエンド実装が複数あり、混乱ポイント：
   - **本番Workers本体**: `backend/wrangler.toml` の `main = "src/index.ts"` → `backend/src/index.ts` → `backend/src/handlers/heatmap.ts`
   - **開発用 simple server**: `backend/simple-server.js`（仕様が別物。days/category等の扱いが違う）
+    - **方針（結論）**: 原則 **Workers（wrangler dev）だけ**を検証対象にする（simple server は使わない）
 
 ### 2) 本番Workersの `/api/heatmap` を改善（仕様統一の第一段）
 
@@ -211,7 +227,7 @@ curl.exe -s "http://127.0.0.1:8787/api/heatmap?days=30&min_reports=1&userLat=34.
 
 - Windows PowerShell は `curl` が `Invoke-WebRequest` エイリアスになりやすいので **`curl.exe` を使う**
 - `.dev.vars` はコミットしない（`.gitignore` に追加済み）
-- `backend/simple-server.js` は仕様が別物なので、次回以降「Workersに寄せて統一する」か「使わない方針」にするのが安全
+- `backend/simple-server.js` は仕様が別物。**結論: 使わない（Workersに統一）**。どうしても使う場合は「返却形式/クエリ仕様」がWorkersと一致しているかを先に確認する
 
 ---
 
