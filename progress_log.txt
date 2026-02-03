@@ -127,3 +127,22 @@
 - 3157cb6: docs: start doc consistency update
 - 82f0273: docs: track deployment status
 - 80ae8b6: docs: fix handover consistency
+
+---
+
+## 2026-02-03
+
+### 引き継ぎ資料の追記（前提env/依存、simple-server方針の明文化）
+
+**実施内容:**
+- `docs/sessions/SESSION_HANDOVER_20260108_PART1.md` に「前提（環境変数/依存）」を追加
+- `backend/simple-server.js` の扱いを「原則使わない（Workersに統一）」として結論明記
+- `TODO.md` にチェックボックス運用ルールを追記し、当タスクを作業中として追加
+
+**変更ファイル:**
+- docs/sessions/SESSION_HANDOVER_20260108_PART1.md
+- TODO.md
+
+**コミット:**
+- e81d0e3: docs: update TODO
+- 34fcb3d: docs: clarify handover prerequisites
