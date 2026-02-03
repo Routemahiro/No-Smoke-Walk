@@ -256,7 +256,7 @@ export function useGeolocation(enableHighAccuracy = true) {
 
       // 2) Only auto-refresh location when permission is already granted
       //    (avoids re-triggering the permission prompt on some browsers/OS)
-      const permissionsApi = navigator.permissions?.query ? navigator.permissions : null;
+      const permissionsApi = (navigator as unknown as { permissions?: Permissions }).permissions ?? null;
       if (navigator.geolocation && permissionsApi) {
         (async () => {
           try {
