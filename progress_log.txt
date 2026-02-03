@@ -168,3 +168,31 @@
 **コミット:**
 - 9a56bea: docs: update TODO
 - 39b4d95: fix(frontend): reduce geolocation prompts
+
+---
+
+## 2026-02-03
+
+### 本番反映（Cloudflare Pages / Workers）
+
+**実施内容:**
+- GitHubへ push（複数コミット）
+- Cloudflare Pages 手動デプロイ（`no-smoke-walk`）
+- Cloudflare Workers 手動デプロイ（`no-smoke-walk-api`）
+- ただし **Supabase のプロジェクトURLがDNS解決できない/到達不能**の疑いがあり、Workersの `/api/heatmap` は上流で失敗（`Supabase query failed: 530`）
+  - 暫定対応として、フロント側を「上流障害でもデモデータにフォールバック」するように変更して再デプロイ
+
+**デプロイ/確認:**
+- Pages preview:
+  - https://4a9d6653.no-smoke-walk.pages.dev
+  - https://9dbca76c.no-smoke-walk.pages.dev
+- 本番ドメイン: https://no-smoke-alert.com
+- Workers:
+  - https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/health（OK）
+  - https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/heatmap（上流障害）
+
+**コミット:**
+- 4f4d9dc: fix(frontend): fix permissions api check
+- e3ad22c: fix(backend): use service key for heatmap reads
+- 4add1f2: fix(backend): surface supabase errors for heatmap
+- b40a620: fix(frontend): fallback on upstream heatmap failures
