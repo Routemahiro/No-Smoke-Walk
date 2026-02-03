@@ -70,8 +70,12 @@ export function useHeatmap(filters: HeatmapFilters = {}) {
       console.error('Heatmap fetch error:', error);
       
       // Check if it's a connection error and provide fallback data
-      const isConnectionError = error instanceof Error && 
-        (error.message.includes('CONNECTION_REFUSED') || error.message.includes('Failed to fetch'));
+      const isConnectionError = error instanceof Error && (
+        error.message.includes('CONNECTION_REFUSED') ||
+        error.message.includes('Failed to fetch') ||
+        // Backend is reachable but upstream (Supabase) is failing → treat as fallback-worthy
+        error.message.includes('Supabase query failed')
+      );
       
       if (isConnectionError) {
         console.warn('Backend connection failed, using fallback demo data');
