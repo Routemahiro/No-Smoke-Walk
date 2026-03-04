@@ -501,13 +501,9 @@ export function HeatmapView() {
           <div className="flex flex-wrap gap-3 items-center">
             {/* User Location Button - Made larger and more prominent */}
             <Button
-              onClick={async () => {
-                try {
-                  await getCurrentLocation();
-                  trackMapInteraction('get_location_button_click');
-                } catch (error) {
-                  console.error('Failed to get current location:', error);
-                }
+              onClick={() => {
+                getCurrentLocation({ forceFresh: true });
+                trackMapInteraction('get_location_button_click');
               }}
               size="default"
               className="bg-blue-600 hover:bg-blue-700 text-white"

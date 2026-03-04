@@ -5,7 +5,7 @@ import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Users } from 'luc
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, useGeolocation } from '@/hooks/useGeolocation';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { apiClient } from '@/lib/supabase';
 import { ReportCategory } from '@/types';
@@ -28,7 +28,7 @@ const CATEGORY_CONFIG = {
 } as const;
 
 export function ReportForm() {
-  const { location, error: locationError, loading: locationLoading, getCurrentLocation } = useGeolocation();
+  const { location, error: locationError, loading: locationLoading, isWatching, getCurrentLocation } = useGeolocation();
   const { isBlocked, remainingTime, submissionCount, maxSubmissions, recordSubmission } = useRateLimit();
   const [selectedCategory, setSelectedCategory] = useState<ReportCategory | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -49,6 +49,7 @@ export function ReportForm() {
     setAutoFetchEnabled(enabled);
     if (typeof window !== 'undefined') {
       localStorage.setItem('geolocation-auto-fetch', enabled.toString());
+      window.dispatchEvent(new CustomEvent(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, { detail: { enabled } }));
       console.log('📍 Auto-fetch setting saved:', enabled);
     }
   };
@@ -137,9 +138,9 @@ export function ReportForm() {
             </label>
             <p className="text-xs text-blue-700 mt-1">
               {autoFetchEnabled 
-                ? (location 
-                    ? '✓ 自動的に位置情報を取得しています' 
-                    : '✓ 次回から自動的に位置情報を取得します')
+                ? (isWatching
+                    ? '✓ 15〜30秒ごとに現在地を自動更新しています'
+                    : '✓ 許可済みの場合は15〜30秒ごとに自動更新します')
                 : '✗ 手動で「現在位置を表示」ボタンを押す必要があります'}
             </p>
           </div>
@@ -170,7 +171,7 @@ export function ReportForm() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={getCurrentLocation}
+                  onClick={() => getCurrentLocation({ forceFresh: true })}
                   className="mt-2"
                 >
                   再試行
@@ -179,15 +180,15 @@ export function ReportForm() {
             </Alert>
           )}
           
-          {!location && !locationLoading && !locationError && (
+          {!locationLoading && !locationError && (
             <Button
-              onClick={getCurrentLocation}
+              onClick={() => getCurrentLocation({ forceFresh: true })}
               variant="outline"
               className="w-full"
               size="sm"
             >
               <MapPin className="h-4 w-4 mr-2" />
-              現在位置を表示
+              {location ? '現在位置を更新' : '現在位置を表示'}
             </Button>
           )}
         </div>

@@ -1,16 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Location } from '@/types';
 
 const AUTO_FETCH_KEY = 'geolocation-auto-fetch';
 const LAST_LOCATION_KEY = 'geolocation-last-location';
+const PERMISSION_GRANTED_KEY = 'geolocation-permission-granted';
+const AUTO_REFRESH_INTERVAL_MS = 20000; // 20s
+const WATCH_UPDATE_MIN_INTERVAL_MS = 15000; // 15s
+
+export const GEOLOCATION_AUTO_FETCH_CHANGED_EVENT = 'geolocation-auto-fetch-changed';
 
 interface GeolocationState {
   location: Location | null;
   error: string | null;
   loading: boolean;
   isWatching: boolean;
+}
+
+interface GetCurrentLocationOptions {
+  silent?: boolean;
+  forceFresh?: boolean;
 }
 
 export function useGeolocation(enableHighAccuracy = true) {
@@ -20,7 +30,10 @@ export function useGeolocation(enableHighAccuracy = true) {
     loading: false,
     isWatching: false,
   });
-  const [watchId, setWatchId] = useState<number | null>(null);
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
+  const autoRefreshTimerRef = useRef<number | null>(null);
+  const lastWatchUpdateRef = useRef(0);
 
   const saveLastLocation = useCallback((location: Location) => {
     if (typeof window === 'undefined') return;
@@ -49,85 +62,134 @@ export function useGeolocation(enableHighAccuracy = true) {
     }
   }, []);
 
-  const getCurrentLocation = useCallback(() => {
-    if (typeof window === 'undefined' || !navigator.geolocation) {
-      setState(prev => ({
-        ...prev,
-        error: 'このブラウザは位置情報に対応していません',
-        loading: false,
-      }));
-      return;
+  const markPermissionGranted = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(PERMISSION_GRANTED_KEY, 'true');
+    } catch {
+      // ignore storage errors
     }
+  }, []);
 
-    // Check if the site is running on HTTPS (required for geolocation on mobile)
-    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-      setState(prev => ({
-        ...prev,
-        error: '位置情報機能にはHTTPS接続が必要です',
-        loading: false,
-      }));
-      return;
+  const clearPermissionGranted = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(PERMISSION_GRANTED_KEY);
+    } catch {
+      // ignore storage errors
     }
+  }, []);
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+  const hasPermissionBeenGranted = useCallback((): boolean => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem(PERMISSION_GRANTED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }, []);
 
-    const options: PositionOptions = {
-      enableHighAccuracy,
-      timeout: 15000, // Increased timeout for mobile
-      maximumAge: 30000, // Reduced cache time for more accuracy
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude: lat, longitude: lon, accuracy } = position.coords;
-        console.log('📍 Location obtained:', { lat, lon, accuracy });
-        
-        // Validate coordinates are within Japan bounds
-        if (lat < 24 || lat > 46 || lon < 123 || lon > 146) {
-          console.log('📍 Location outside Japan bounds');
+  const applyLocation = useCallback(
+    (location: Location, silent = false) => {
+      if (location.lat < 24 || location.lat > 46 || location.lon < 123 || location.lon > 146) {
+        if (!silent) {
           setState(prev => ({
             ...prev,
             error: '日本国内の位置情報のみ対応しています',
             loading: false,
           }));
-          return;
         }
+        return false;
+      }
 
-        const newLocation = { lat, lon, accuracy };
-        console.log('📍 Setting location state:', newLocation);
-        setState(prev => ({
-          ...prev,
-          location: newLocation,
-          loading: false,
-          error: null,
-        }));
-        saveLastLocation(newLocation);
-      },
-      (error) => {
-        let errorMessage = '位置情報の取得に失敗しました';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = '位置情報のアクセスが拒否されました。スマートフォンの場合は、ブラウザの設定で位置情報を許可してください。';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = '位置情報が利用できません。GPS機能を有効にしてください。';
-            break;
-          case error.TIMEOUT:
-            errorMessage = '位置情報の取得がタイムアウトしました。屋外で再度お試しください。';
-            break;
+      setState(prev => ({
+        ...prev,
+        location,
+        loading: false,
+        error: null,
+      }));
+      saveLastLocation(location);
+      markPermissionGranted();
+      return true;
+    },
+    [markPermissionGranted, saveLastLocation]
+  );
+
+  const getCurrentLocation = useCallback(
+    (options: GetCurrentLocationOptions = {}) => {
+      const { silent = false, forceFresh = false } = options;
+
+      if (typeof window === 'undefined' || !navigator.geolocation) {
+        if (!silent) {
+          setState(prev => ({
+            ...prev,
+            error: 'このブラウザは位置情報に対応していません',
+            loading: false,
+          }));
         }
+        return;
+      }
 
-        setState(prev => ({
-          ...prev,
-          error: errorMessage,
-          loading: false,
-        }));
-      },
-      options
-    );
-  }, [enableHighAccuracy, saveLastLocation]);
+      // HTTPS is required for geolocation on mobile browsers
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+        if (!silent) {
+          setState(prev => ({
+            ...prev,
+            error: '位置情報機能にはHTTPS接続が必要です',
+            loading: false,
+          }));
+        }
+        return;
+      }
 
+      if (!silent) {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+      }
+
+      const geolocationOptions: PositionOptions = {
+        enableHighAccuracy,
+        timeout: silent ? 10000 : 15000,
+        maximumAge: forceFresh ? 0 : (silent ? 15000 : 30000),
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude: lat, longitude: lon, accuracy } = position.coords;
+          applyLocation({ lat, lon, accuracy }, silent);
+        },
+        (geoError) => {
+          if (geoError.code === geoError.PERMISSION_DENIED) {
+            clearPermissionGranted();
+          }
+
+          if (silent) {
+            return;
+          }
+
+          let errorMessage = '位置情報の取得に失敗しました';
+          switch (geoError.code) {
+            case geoError.PERMISSION_DENIED:
+              errorMessage = '位置情報のアクセスが拒否されました。スマートフォンの場合は、ブラウザの設定で位置情報を許可してください。';
+              break;
+            case geoError.POSITION_UNAVAILABLE:
+              errorMessage = '位置情報が利用できません。GPS機能を有効にしてください。';
+              break;
+            case geoError.TIMEOUT:
+              errorMessage = '位置情報の取得がタイムアウトしました。屋外で再度お試しください。';
+              break;
+          }
+
+          setState(prev => ({
+            ...prev,
+            error: errorMessage,
+            loading: false,
+          }));
+        },
+        geolocationOptions
+      );
+    },
+    [applyLocation, clearPermissionGranted, enableHighAccuracy]
+  );
 
   const clearError = () => {
     setState(prev => ({ ...prev, error: null }));
@@ -160,91 +222,166 @@ export function useGeolocation(enableHighAccuracy = true) {
       return;
     }
 
-    if (watchId) {
-      console.log('📍 Already watching position');
+    if (watchIdRef.current !== null) {
       return;
     }
 
-    console.log('📍 Starting position watch');
     setState(prev => ({ ...prev, isWatching: true, error: null }));
+    lastWatchUpdateRef.current = 0;
 
-    const options: PositionOptions = {
+    const watchOptions: PositionOptions = {
       enableHighAccuracy,
-      timeout: 10000,
-      maximumAge: 5000, // Update more frequently for real-time tracking
+      timeout: 12000,
+      maximumAge: 10000,
     };
 
-    const id = navigator.geolocation.watchPosition(
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const { latitude: lat, longitude: lon, accuracy } = position.coords;
-        console.log('📍 Position updated:', { lat, lon, accuracy });
-        
-        // Validate coordinates are within Japan bounds
-        if (lat < 24 || lat > 46 || lon < 123 || lon > 146) {
-          console.log('📍 Location outside Japan bounds');
+        const now = Date.now();
+        if (now - lastWatchUpdateRef.current < WATCH_UPDATE_MIN_INTERVAL_MS) {
           return;
         }
+        lastWatchUpdateRef.current = now;
 
-        const newLocation = { lat, lon, accuracy };
-        setState(prev => ({
-          ...prev,
-          location: newLocation,
-          error: null,
-        }));
-        saveLastLocation(newLocation);
+        const { latitude: lat, longitude: lon, accuracy } = position.coords;
+        applyLocation({ lat, lon, accuracy }, true);
       },
-      (error) => {
-        console.error('📍 Watch position error:', error);
+      (geoError) => {
+        if (geoError.code === geoError.PERMISSION_DENIED) {
+          clearPermissionGranted();
+        }
+
         let errorMessage = 'リアルタイム位置追跡でエラーが発生しました';
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
+        switch (geoError.code) {
+          case geoError.PERMISSION_DENIED:
             errorMessage = '位置情報のアクセスが拒否されました';
             break;
-          case error.POSITION_UNAVAILABLE:
+          case geoError.POSITION_UNAVAILABLE:
             errorMessage = '位置情報が利用できません';
             break;
-          case error.TIMEOUT:
+          case geoError.TIMEOUT:
             errorMessage = '位置情報の取得がタイムアウトしました';
             break;
         }
 
+        watchIdRef.current = null;
         setState(prev => ({
           ...prev,
           error: errorMessage,
           isWatching: false,
         }));
-        setWatchId(null);
       },
-      options
+      watchOptions
     );
 
-    setWatchId(id);
-  }, [enableHighAccuracy, saveLastLocation, watchId]);
+    watchIdRef.current = watchId;
+  }, [applyLocation, clearPermissionGranted, enableHighAccuracy]);
 
-  const stopWatching = useCallback(() => {
-    if (watchId && typeof window !== 'undefined') {
-      console.log('📍 Stopping position watch');
-      navigator.geolocation.clearWatch(watchId);
-      setWatchId(null);
+  const stopWatching = useCallback((skipStateUpdate = false) => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      return;
+    }
+
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
+    if (!skipStateUpdate) {
       setState(prev => ({ ...prev, isWatching: false }));
     }
-  }, [watchId]);
+  }, []);
 
-  // Auto-get location on mount if user has enabled auto-fetch
+  const startAutoRefreshTimer = useCallback(() => {
+    if (typeof window === 'undefined' || autoRefreshTimerRef.current !== null) {
+      return;
+    }
+
+    autoRefreshTimerRef.current = window.setInterval(() => {
+      getCurrentLocation({ silent: true, forceFresh: true });
+    }, AUTO_REFRESH_INTERVAL_MS);
+  }, [getCurrentLocation]);
+
+  const stopAutoRefreshTimer = useCallback(() => {
+    if (typeof window === 'undefined' || autoRefreshTimerRef.current === null) {
+      return;
+    }
+    window.clearInterval(autoRefreshTimerRef.current);
+    autoRefreshTimerRef.current = null;
+  }, []);
+
+  // Keep auto-fetch setting in sync across components/tabs.
   useEffect(() => {
-    // Check if we're in the browser environment
     if (typeof window === 'undefined') return;
-    
-    // Check localStorage for auto-fetch setting
-    const autoFetchEnabled = localStorage.getItem(AUTO_FETCH_KEY) === 'true';
-    
-    console.log('📍 useGeolocation hook mounted, navigator.geolocation available:', !!navigator.geolocation);
-    console.log('📍 Auto-fetch enabled:', autoFetchEnabled);
-    let cancelled = false;
 
-    if (autoFetchEnabled) {
-      // 1) Immediately use last saved location (no permission prompt)
+    const syncAutoFetchSetting = () => {
+      setAutoFetchEnabled(localStorage.getItem(AUTO_FETCH_KEY) === 'true');
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === AUTO_FETCH_KEY) {
+        syncAutoFetchSetting();
+      }
+    };
+
+    const handleLocalEvent = (event: Event) => {
+      const detail = (event as CustomEvent<{ enabled?: boolean }>).detail;
+      if (typeof detail?.enabled === 'boolean') {
+        setAutoFetchEnabled(detail.enabled);
+      } else {
+        syncAutoFetchSetting();
+      }
+    };
+
+    syncAutoFetchSetting();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, handleLocalEvent as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, handleLocalEvent as EventListener);
+    };
+  }, []);
+
+  // Auto-fetch ON: load last location immediately + start realtime tracking only when permission is usable.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let cancelled = false;
+    let permissionStatus: PermissionStatus | null = null;
+    let permissionChangeListener: (() => void) | null = null;
+
+    const stopRealtimeTracking = () => {
+      stopAutoRefreshTimer();
+      stopWatching();
+    };
+
+    const startRealtimeTracking = () => {
+      if (cancelled) return;
+      startWatching();
+      startAutoRefreshTimer();
+      getCurrentLocation({ silent: true, forceFresh: true });
+    };
+
+    const handlePermissionState = (state: PermissionState) => {
+      if (state === 'granted') {
+        startRealtimeTracking();
+        return;
+      }
+
+      stopRealtimeTracking();
+      if (state === 'denied') {
+        clearPermissionGranted();
+      }
+    };
+
+    const initialize = async () => {
+      if (!autoFetchEnabled) {
+        stopRealtimeTracking();
+        return;
+      }
+
+      // Show last known location instantly (no prompt).
       const saved = loadLastLocation();
       if (saved) {
         setState(prev => ({
@@ -254,66 +391,57 @@ export function useGeolocation(enableHighAccuracy = true) {
         }));
       }
 
-      // 2) Only auto-refresh location when permission is already granted
-      //    (avoids re-triggering the permission prompt on some browsers/OS)
-      const permissionsApi = (navigator as unknown as { permissions?: Permissions }).permissions ?? null;
-      if (navigator.geolocation && permissionsApi) {
-        (async () => {
-          try {
-            const status = await permissionsApi.query({ name: 'geolocation' as PermissionName });
-            if (cancelled) return;
-            if (status.state !== 'granted') return;
-
-            const options: PositionOptions = {
-              enableHighAccuracy,
-              timeout: 8000,
-              maximumAge: 5 * 60 * 1000, // allow cached position up to 5 minutes
-            };
-
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                if (cancelled) return;
-                const { latitude: lat, longitude: lon, accuracy } = position.coords;
-                // Validate Japan bounds
-                if (lat < 24 || lat > 46 || lon < 123 || lon > 146) return;
-                const newLocation = { lat, lon, accuracy };
-                setState(prev => ({
-                  ...prev,
-                  location: newLocation,
-                  error: null,
-                }));
-                saveLastLocation(newLocation);
-              },
-              () => {
-                // Silent fail: user can manually retry via button
-              },
-              options
-            );
-          } catch {
-            // Permissions API errors: do nothing (avoid prompting)
-          }
-        })();
+      if (!navigator.geolocation) {
+        return;
       }
-    }
 
-    // Cleanup watch on unmount
-    return () => {
-      cancelled = true;
-      if (watchId && typeof window !== 'undefined') {
-        console.log('📍 Cleaning up position watch on unmount');
-        navigator.geolocation.clearWatch(watchId);
+      const permissionsApi = (navigator as unknown as { permissions?: Permissions }).permissions ?? null;
+      if (permissionsApi?.query) {
+        try {
+          permissionStatus = await permissionsApi.query({ name: 'geolocation' as PermissionName });
+          if (cancelled || !permissionStatus) return;
+
+          handlePermissionState(permissionStatus.state);
+          permissionChangeListener = () => {
+            if (!permissionStatus || cancelled) return;
+            handlePermissionState(permissionStatus.state);
+          };
+          permissionStatus.addEventListener?.('change', permissionChangeListener);
+          return;
+        } catch {
+          // Ignore Permissions API errors and fall back to stored grant state.
+        }
+      }
+
+      // Fallback for browsers where Permissions API is unavailable.
+      if (hasPermissionBeenGranted()) {
+        startRealtimeTracking();
+      } else {
+        stopRealtimeTracking();
       }
     };
-  }, [enableHighAccuracy, loadLastLocation, saveLastLocation, watchId]);
 
-  // Debug log current state (only in browser)
-  if (typeof window !== 'undefined') {
-    console.log('📍 useGeolocation current state:', {
-      hasLocation: !!state.location,
-      loading: state.loading,
-      error: state.error
-    });
-  }
+    initialize();
+
+    return () => {
+      cancelled = true;
+      if (permissionStatus && permissionChangeListener) {
+        permissionStatus.removeEventListener?.('change', permissionChangeListener);
+      }
+      stopAutoRefreshTimer();
+      stopWatching(true);
+    };
+  }, [
+    autoFetchEnabled,
+    clearPermissionGranted,
+    getCurrentLocation,
+    hasPermissionBeenGranted,
+    loadLastLocation,
+    startAutoRefreshTimer,
+    startWatching,
+    stopAutoRefreshTimer,
+    stopWatching,
+  ]);
 
   return {
     ...state,
@@ -322,6 +450,6 @@ export function useGeolocation(enableHighAccuracy = true) {
     setManualLocation,
     startWatching,
     stopWatching,
-    isSupported: !!navigator.geolocation,
+    isSupported: typeof navigator !== 'undefined' && !!navigator.geolocation,
   };
 }
