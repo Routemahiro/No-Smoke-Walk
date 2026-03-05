@@ -24,7 +24,7 @@
 ### 開発関連
 - **DEVELOPMENT_ISSUES_AND_SOLUTIONS.md** - 開発時の問題と解決策
 - **GITHUB_ACTIONS_SETUP_HANDOVER.md** - GitHub Actions設定引き継ぎ
-- **BLOG_FEATURE_SPECIFICATION.md** - ブログ機能仕様
+- ~~**BLOG_FEATURE_SPECIFICATION.md** - ブログ機能仕様~~ （2026-03-05 削除: 費用対効果が低いため機能ごと撤去）
 
 ## 🔄 新しいドキュメントへの移行
 

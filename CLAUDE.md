@@ -283,7 +283,7 @@ wrangler deploy
 
 
 ## 📈 今後の改善案
-- ストック型ブログ記事の作成をしやすくするための仕様づくり
+- SNS運用からの流入施策の強化（ヒートマップのスクリーンショット共有など）
 
 ## その他情報
 - planディレクトリにはサイトの運営方針やマーケティング戦略などが記載されている。指示がない限りこのディレクトリに対しては何も行わないこと。
@@ -305,8 +305,9 @@ wrangler deploy
 - 2025-08-27 GitHub Actions自動デプロイ設定とテスト記事作成（.github/workflows/deploy.yml修正、003-github-actions-test.md作成、ローカル動作確認済み、GitHub認証設定のみ残作業、詳細は docs/GITHUB_ACTIONS_SETUP_HANDOVER.md 参照）
 - 2026-01-07 backend/src/handlers/heatmap.ts 本番Workersのヒートマップ集約を改善（userLat/userLon/radius対応、75m級グリッド集約、densityRatio返却）
 - 2026-03-04 frontend/src/hooks/useGeolocation.ts, frontend/src/components/ReportForm.tsx, frontend/src/components/HeatmapView.tsx 自動取得ON時の現在地追跡を15〜30秒級に改善（許可済みのみ自動追跡、手動更新導線も強化）
+- 2026-03-05 ブログ機能を完全削除（費用対効果が低いため撤去。blog/ディレクトリ、content/blog/、lib/blog.ts、types/blog.ts、トップページのブログリンク・フッターリンクを削除。SNS運用にリソース集中）
 
-## 🚨 重要なエラー対策・教訓（2025-08-02 ブログ機能実装時）
+## 🚨 重要なエラー対策・教訓（Cloudflare Pages + Next.js SSG）
 
 ### 静的サイト生成（SSG）でのエラー原因と対策
 

@@ -65,7 +65,6 @@ frontend/src/
 ├── app/                    # App Router ページ
 │   ├── page.tsx           # トップページ
 │   ├── heatmap/           # ヒートマップページ
-│   ├── blog/              # ブログ機能
 │   ├── privacy/           # プライバシーポリシー
 │   └── terms/             # 利用規約
 ├── components/            # Reactコンポーネント
@@ -79,8 +78,7 @@ frontend/src/
 │   └── useRateLimit.ts    # レート制限管理
 └── lib/                   # ユーティリティ
     ├── supabase.ts        # APIクライアント
-    ├── fingerprint.ts     # デバイス識別
-    └── blog.ts            # ブログ関連処理
+    └── fingerprint.ts     # デバイス識別
 ```
 
 ### 2. バックエンド（Cloudflare Workers）

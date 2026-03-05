@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 // import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
-import { Map, BookOpen } from 'lucide-react';
+import { Map } from 'lucide-react';
 import { NinjaAd } from '@/components/NinjaAd';
 
 // Dynamically import ReportForm to avoid SSR issues
@@ -81,27 +81,6 @@ export default function Home() {
                   </div>
                 </div>
               </Link>
-
-              <Link 
-                href="/blog"
-                className="block w-full max-w-md mx-auto"
-              >
-                <div className="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 p-2 rounded-lg">
-                      <BookOpen className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">
-                        ブログ・記事を読む
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        迷惑タバコ問題に関する有益な情報
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
             </div>
           </div>
 
@@ -173,9 +152,6 @@ export default function Home() {
               </Link>
               <Link href="/privacy" className="hover:text-gray-700 underline">
                 プライバシーポリシー
-              </Link>
-              <Link href="/blog" className="hover:text-gray-700 underline">
-                ブログ・記事
               </Link>
             </div>
             <p>© 2025 NO-SMOKE ALERT Osaka</p>

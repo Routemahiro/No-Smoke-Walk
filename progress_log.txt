@@ -200,3 +200,35 @@
 **追記（復旧）:**
 - Supabaseプロジェクト `no-smoke-walk-osaka` が paused だったため、Dashboard で resume して復旧
 - 復旧後、Workers `/api/heatmap` は `success:true` を確認
+
+---
+
+## 2026-03-05
+
+### ブログ機能の完全削除（費用対効果の見直し）
+
+**実施内容:**
+- ブログ機能を費用対効果の観点から評価し、完全削除を決定
+  - 検索流入のポテンシャルが低い（行政サイト・大手メディアとの競合、ニッチすぎるキーワード）
+  - メンテナンスコストに見合うリターンが期待できない
+  - SNS運用のほうがプロジェクトの性質に合っている
+- 削除したファイル/ディレクトリ:
+  - frontend/src/app/blog/ (page.tsx, [id]/page.tsx, components/BlogCard.tsx, components/TagFilter.tsx)
+  - frontend/src/lib/blog.ts
+  - frontend/src/types/blog.ts
+  - content/blog/ (001-osaka-smoking-ban-guide.md, 002-child-safety-secondhand-smoke.md, 003-github-actions-test.md)
+  - docs/OLD_DOCS/BLOG_FEATURE_SPECIFICATION.md
+- トップページ (page.tsx) からブログリンク・フッターリンク・BookOpenアイコンimportを削除
+- ドキュメント更新: CLAUDE.md, ARCHITECTURE.md, docs/OLD_DOCS/README.md
+
+**変更ファイル:**
+- frontend/src/app/page.tsx（ブログリンク削除）
+- docs/ARCHITECTURE.md（ディレクトリ構造からblog関連を削除）
+- CLAUDE.md（今後の改善案更新、開発記録追記、教訓セクションのタイトル修正）
+- docs/OLD_DOCS/README.md（削除済みファイルの注記追加）
+- TODO.md（タスク追加・完了マーク）
+
+**効果:**
+- コードベースから約1,054行のブログ関連コードを削除
+- メンテナンス対象のページ/コンポーネントが減少
+- SNS運用にリソースを集中できる体制に
