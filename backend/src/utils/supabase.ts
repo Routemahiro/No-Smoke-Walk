@@ -1,5 +1,20 @@
 import { Env } from '../types';
 
+export function createSupabaseHeaders(apiKey: string, extraHeaders: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    apikey: apiKey,
+    ...extraHeaders,
+  };
+
+  // New Supabase sb_* API keys are opaque, not JWTs, so they must not be used
+  // as Authorization bearer tokens. Legacy anon/service_role JWTs still need it.
+  if (!apiKey.startsWith('sb_')) {
+    headers.Authorization = `Bearer ${apiKey}`;
+  }
+
+  return headers;
+}
+
 // Helper function to get location name from coordinates
 export async function getLocationName(lat: number, lon: number): Promise<{ prefecture: string; city: string }> {
   // For now, return default Osaka values

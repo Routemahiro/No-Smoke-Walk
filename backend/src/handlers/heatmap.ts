@@ -1,4 +1,5 @@
 import { HeatmapResponse, ApiResponse, Env, ReportCategory } from '../types';
+import { createSupabaseHeaders } from '../utils/supabase';
 
 const OSAKA_CENTER_LAT = 34.6937;
 const METERS_PER_DEGREE_LAT = 111_000;
@@ -186,11 +187,9 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
     const readKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
     const dbResponse = await fetch(queryUrl, {
       method: 'GET',
-      headers: {
-        'apikey': readKey,
-        'Authorization': `Bearer ${readKey}`,
+      headers: createSupabaseHeaders(readKey, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (!dbResponse.ok) {
@@ -346,11 +345,9 @@ export async function handleHeatmapStats(request: Request, env: Env): Promise<Re
     const readKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
     const statsResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports?select=category,prefecture,city&reported_at=gte.${thirtyDaysAgo.toISOString()}`, {
       method: 'GET',
-      headers: {
-        'apikey': readKey,
-        'Authorization': `Bearer ${readKey}`,
+      headers: createSupabaseHeaders(readKey, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (!statsResponse.ok) {

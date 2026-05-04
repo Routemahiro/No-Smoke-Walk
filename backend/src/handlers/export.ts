@@ -1,4 +1,5 @@
 import { ApiResponse, Env, DbReport } from '../types';
+import { createSupabaseHeaders } from '../utils/supabase';
 
 export async function handleExportCSV(request: Request, env: Env): Promise<Response> {
   try {
@@ -46,11 +47,9 @@ export async function handleExportCSV(request: Request, env: Env): Promise<Respo
 
     const response = await fetch(queryUrl, {
       method: 'GET',
-      headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (!response.ok) {
@@ -152,11 +151,9 @@ export async function handleExportExcel(request: Request, env: Env): Promise<Res
 
     const response = await fetch(queryUrl, {
       method: 'GET',
-      headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (!response.ok) {

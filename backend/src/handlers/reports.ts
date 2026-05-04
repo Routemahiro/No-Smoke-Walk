@@ -1,4 +1,4 @@
-import { getLocationName, createIpHash, createFingerprintHash } from '../utils/supabase';
+import { getLocationName, createIpHash, createFingerprintHash, createSupabaseHeaders } from '../utils/supabase';
 import { ReportSubmissionRequest, ApiResponse, Env } from '../types';
 
 export async function handleReportSubmission(request: Request, env: Env): Promise<Response> {
@@ -73,12 +73,10 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
     // Insert report using HTTP API
     const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports`, {
       method: 'POST',
-      headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
-      },
+      }),
       body: JSON.stringify({
         lat: lat,
         lon: lon,
@@ -149,11 +147,9 @@ async function checkAbuseGuard(env: Env, ipHash: string, fpHash: string): Promis
   try {
     const response = await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard?select=report_count&or=(ip_hash.eq.${ipHash},fp_hash.eq.${fpHash})&window_start=gte.${windowStart.toISOString()}`, {
       method: 'GET',
-      headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (!response.ok) {
@@ -183,11 +179,9 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
     // Try to get existing record
     const getResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard?select=id,report_count&or=(ip_hash.eq.${ipHash},fp_hash.eq.${fpHash})&window_start=gte.${windowStart.toISOString()}`, {
       method: 'GET',
-      headers: {
-        'apikey': env.SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
         'Content-Type': 'application/json'
-      }
+      })
     });
 
     if (getResponse.ok) {
@@ -198,11 +192,9 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
         // Update existing record
         await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard?id=eq.${existing.id}`, {
           method: 'PATCH',
-          headers: {
-            'apikey': serviceKey,
-            'Authorization': `Bearer ${serviceKey}`,
+          headers: createSupabaseHeaders(serviceKey, {
             'Content-Type': 'application/json'
-          },
+          }),
           body: JSON.stringify({
             report_count: existing.report_count + 1,
             updated_at: new Date().toISOString()
@@ -212,11 +204,9 @@ async function updateAbuseGuard(env: Env, ipHash: string, fpHash: string): Promi
         // Create new record
         await fetch(`${env.SUPABASE_URL}/rest/v1/abuse_guard`, {
           method: 'POST',
-          headers: {
-            'apikey': serviceKey,
-            'Authorization': `Bearer ${serviceKey}`,
+          headers: createSupabaseHeaders(serviceKey, {
             'Content-Type': 'application/json'
-          },
+          }),
           body: JSON.stringify({
             ip_hash: ipHash,
             fp_hash: fpHash,
