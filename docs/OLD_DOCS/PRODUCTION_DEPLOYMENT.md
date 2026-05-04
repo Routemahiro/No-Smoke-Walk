@@ -261,7 +261,7 @@ CLOUDFLARE_ACCOUNT_ID=your_account_id
 # Supabase設定
 SUPABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
 SUPABASE_ANON_KEY=your_anon_key
-EXPORT_SECRET_KEY=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+EXPORT_SECRET_KEY=your-secure-export-key
 ```
 
 ### 4.2 GitHub Actions ワークフロー

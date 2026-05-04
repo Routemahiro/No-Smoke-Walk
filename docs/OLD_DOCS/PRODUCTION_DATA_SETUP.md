@@ -28,8 +28,8 @@
 
 # 3. プロジェクト設定から以下を取得
 # - Project URL: https://your-project-id.supabase.co
-# - anon public key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-# - service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+# - anon public key: your-supabase-anon-key
+# - service_role key: your-supabase-service-role-key
 ```
 
 #### 1.2 データベーススキーマ適用
@@ -56,7 +56,7 @@ cd /mnt/e/mega/No-Smoke-Walk/frontend
 ```env
 # Supabase 本番設定
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # API ベースURL (本番切り替え後)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8787
@@ -74,7 +74,7 @@ cd /mnt/e/mega/No-Smoke-Walk/backend
 ```env
 # Supabase 本番設定
 SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
 # 環境設定
 ENVIRONMENT=development

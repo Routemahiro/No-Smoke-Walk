@@ -25,6 +25,9 @@ backend/worker/
 backend/.env.local
 .dev.vars
 backend/.dev.vars
+.mcp.json
+CLAUDE.local.md
+.claude/settings.local.json
 
 # Database
 database/.env

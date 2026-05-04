@@ -10,9 +10,14 @@ const envPath = path.join(__dirname, '.env.local');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
   envContent.split('\n').forEach(line => {
-    const [key, value] = line.split('=');
-    if (key && value && !key.startsWith('#') && key.trim() && value.trim()) {
-      process.env[key.trim()] = value.trim();
+    const separatorIndex = line.indexOf('=');
+    if (separatorIndex === -1) {
+      return;
+    }
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim();
+    if (key && value && !key.startsWith('#')) {
+      process.env[key] = value;
     }
   });
   console.log('✅ Loaded .env.local configuration');
@@ -58,8 +63,12 @@ function setCachedData(cacheKey, data) {
 }
 
 // Supabase client - Use HTTP API instead of SDK for reliability
-const supabaseUrl = 'https://qdqcocgoaxzbhvvmvttr.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY0NzMsImV4cCI6MjA2NjgwMjQ3M30.3sr3dXq7GOz8yLcKn602Ba8Ej-X1zIpCn-T_BxM5Ofk'; // anon key
+const supabaseUrl = process.env.SUPABASE_URL || process.env.DATABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY must be set in backend/.env.local');
+}
 
 // Helper function for Supabase HTTP requests
 async function supabaseRequest(endpoint, method = 'GET', body = null) {

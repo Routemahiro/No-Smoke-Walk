@@ -61,7 +61,7 @@
 ```env
 # Supabase (公開情報)
 NEXT_PUBLIC_SUPABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY0NzMsImV4cCI6MjA2NjgwMjQ3M30.3sr3dXq7GOz8yLcKn602Ba8Ej-X1zIpCn-T_BxM5Ofk
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # Google Analytics
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-3F4H0CTST0
@@ -74,11 +74,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 ```env
 # Supabase接続
 SUPABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkcWNvY2dvYXh6Ymh2dm12dHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyMjY0NzMsImV4cCI6MjA2NjgwMjQ3M30.3sr3dXq7GOz8yLcKn602Ba8Ej-X1zIpCn-T_BxM5Ofk
+SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # セキュリティ・設定
 ABUSE_GUARD=false
-EXPORT_SECRET_KEY=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+EXPORT_SECRET_KEY=your-secure-export-key
 ENVIRONMENT=production
 ```
 
@@ -138,10 +138,10 @@ npm run lint
 **基本的な使用方法**
 ```bash
 # 全データダウンロード
-curl "http://localhost:8787/api/export/csv?secret=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090" > reports.csv
+curl "http://localhost:8787/api/export/csv?secret=your-secure-export-key" > reports.csv
 
 # ブラウザでアクセス（ファイルダウンロード）
-http://localhost:8787/api/export/csv?secret=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+http://localhost:8787/api/export/csv?secret=your-secure-export-key
 ```
 
 **フィルタリング オプション**
@@ -175,7 +175,7 @@ uuid-123,2025/1/15 14:30:00,34.6937,135.5023,大阪府,大阪市中央区,歩き
 ```
 
 **セキュリティ**
-- シークレットキー: `b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090`
+- シークレットキー: `your-secure-export-key`
 - 環境変数 `EXPORT_SECRET_KEY` で設定（`backend/.env.local`ファイルで管理）
 - 無効なキーの場合は403エラーを返します
 - IPアドレス等の個人情報は含まれません（匿名化済みデータのみ）
@@ -183,11 +183,11 @@ uuid-123,2025/1/15 14:30:00,34.6937,135.5023,大阪府,大阪市中央区,歩き
 **本番環境への適用**
 ```bash
 # 本番環境では環境変数として設定
-EXPORT_SECRET_KEY=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+EXPORT_SECRET_KEY=your-secure-export-key
 
 # または Cloudflare Workers の場合
 wrangler secret put EXPORT_SECRET_KEY
-# プロンプトで値を入力: b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+# プロンプトで値を入力: your-secure-export-key
 ```
 
 ## 🔧 技術スタック

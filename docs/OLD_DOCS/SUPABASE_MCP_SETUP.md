@@ -123,8 +123,8 @@ supabase:execute_sql
 MCPサーバー経由で以下の情報を自動取得：
 ```
 - Project URL: https://your-project-id.supabase.co
-- anon public key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-- service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+- anon public key: your-supabase-anon-key
+- service_role key: your-supabase-service-role-key
 ```
 
 #### 4.2 環境変数自動設定

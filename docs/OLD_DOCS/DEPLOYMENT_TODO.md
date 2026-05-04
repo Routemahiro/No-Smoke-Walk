@@ -59,8 +59,8 @@
   | `CLOUDFLARE_API_TOKEN` | 取得したToken | [x] |
   | `CLOUDFLARE_ACCOUNT_ID` | 50009f3eace16f98718b71ee90434cf2 | [x] |
   | `SUPABASE_URL` | `https://qdqcocgoaxzbhvvmvttr.supabase.co` | [x] |
-  | `SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` | [x] |
-  | `EXPORT_SECRET_KEY` | `b04fcc570ffebafe5ff349fe922046209259...` | [x] |
+  | `SUPABASE_ANON_KEY` | `your-supabase-anon-key` | [x] |
+  | `EXPORT_SECRET_KEY` | `your-secure-export-key` | [x] |
 
 - [x] **2.3** GitHub Secrets設定確認
   - Actions secrets一覧で5つのSecretが表示されることを確認

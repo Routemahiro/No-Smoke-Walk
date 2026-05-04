@@ -130,10 +130,10 @@ curl -X POST "https://no-smoke-walk-api.no-smoke-walk.workers.dev/api/reports" \
 ```bash
 # Supabase 接続
 SUPABASE_URL=https://qdqcocgoaxzbhvvmvttr.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
+SUPABASE_ANON_KEY=your-supabase-anon-key
 
 # CSV エクスポート認証
-EXPORT_SECRET_KEY=b04fcc570ffebafe5ff349fe922046209259b95a9468acbd51c7450764956090
+EXPORT_SECRET_KEY=your-secure-export-key
 
 # その他（オプション）
 ABUSE_GUARD=false
