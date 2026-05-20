@@ -42,17 +42,13 @@ export function ReportForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const handleCategorySelect = async (category: ReportCategory) => {
+  const handleCategorySelect = (category: ReportCategory) => {
     setSelectedCategory(category);
     setSubmitError(null);
-
-    if (!location) {
-      await getCurrentLocation({ forceFresh: true });
-    }
   };
 
   const handleSubmit = async () => {
-    if (!location || !selectedCategory) return;
+    if (!selectedCategory) return;
 
     if (isBlocked) {
       setSubmitError(`連続投稿を防ぐため、あと${remainingTime}秒お待ちください`);
@@ -63,6 +59,11 @@ export function ReportForm() {
     setSubmitError(null);
 
     try {
+      const reportLocation = location ?? await getCurrentLocation({ forceFresh: true });
+      if (!reportLocation) {
+        return;
+      }
+
       const canSubmit = recordSubmission();
       if (!canSubmit) {
         setSubmitError('短時間に投稿が集中しています。少し時間をおいてから再度お試しください。');
@@ -70,12 +71,12 @@ export function ReportForm() {
       }
 
       await apiClient.submitReport({
-        lat: location.lat,
-        lon: location.lon,
+        lat: reportLocation.lat,
+        lon: reportLocation.lon,
         category: selectedCategory,
       });
 
-      trackReportSubmission(selectedCategory, { lat: location.lat, lon: location.lon });
+      trackReportSubmission(selectedCategory, { lat: reportLocation.lat, lon: reportLocation.lon });
 
       setSubmitSuccess(true);
       setSelectedCategory(null);
@@ -104,7 +105,7 @@ export function ReportForm() {
             <Alert>
               <MapPin className="h-4 w-4" />
               <AlertDescription>
-                報告内容を選ぶと、現在地の取得許可を確認します。取得できた現在地だけを報告に使います。
+                報告内容を選んで送信ボタンを押すと、現在地の取得許可を確認します。取得できた現在地だけを報告に使います。
               </AlertDescription>
             </Alert>
           )}
@@ -113,7 +114,7 @@ export function ReportForm() {
             <Alert>
               <MapPin className="h-4 w-4" />
               <AlertDescription>
-                前回の位置情報は保存されていますが、報告には使いません。報告内容を選ぶと現在地を取得します。
+                前回の位置情報は保存されていますが、報告には使いません。送信時に現在地を取得します。
               </AlertDescription>
             </Alert>
           )}
@@ -137,24 +138,7 @@ export function ReportForm() {
           {locationError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {locationError}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => getCurrentLocation({ forceFresh: true })}
-                  className="mt-2"
-                >
-                  もう一度取得する
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {location && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>現在地を取得しました。報告を送信できます。</AlertDescription>
+              <AlertDescription>{locationError}</AlertDescription>
             </Alert>
           )}
         </div>
@@ -172,7 +156,7 @@ export function ReportForm() {
                   key={key}
                   variant={isSelected ? 'default' : 'outline'}
                   className={`h-auto p-3 justify-start ${isSelected ? config.color : ''}`}
-                  onClick={() => void handleCategorySelect(key as ReportCategory)}
+                  onClick={() => handleCategorySelect(key as ReportCategory)}
                   disabled={locationLoading || submitting}
                 >
                   <Icon className="h-5 w-5 mr-3 flex-shrink-0" />
@@ -203,28 +187,28 @@ export function ReportForm() {
 
           <Button
             onClick={handleSubmit}
-            disabled={!location || !selectedCategory || submitting || isBlocked}
+            disabled={!selectedCategory || submitting || isBlocked || locationLoading}
             className={`w-full transition-all duration-200 ${
-              location && selectedCategory && !submitting && !isBlocked
+              selectedCategory && !submitting && !isBlocked && !locationLoading
                 ? 'bg-emerald-500 hover:bg-emerald-600 shadow-lg transform hover:scale-105 border-2 border-emerald-300'
                 : ''
             }`}
             size="lg"
           >
-            {submitting ? (
+            {submitting || locationLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                送信中...
+                {location ? '送信中...' : '現在地を取得中...'}
               </>
             ) : isBlocked ? (
               `投稿制限中 (${remainingTime}s)`
-            ) : location && selectedCategory ? (
+            ) : selectedCategory ? (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
                 報告を送信
               </>
             ) : (
-              '報告内容を選んで現在地を取得'
+              '報告内容を選択してください'
             )}
           </Button>
         </div>
