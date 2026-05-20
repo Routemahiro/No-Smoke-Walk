@@ -23,6 +23,9 @@ interface FilterState {
 export function HeatmapView() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
+  const hasUserInteractedRef = useRef(false);
+  const suppressNextMoveEndRef = useRef(false);
+  const hasAutoCenteredRef = useRef(false);
   const [maplibregl, setMaplibregl] = useState<typeof import('maplibre-gl') | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -61,11 +64,6 @@ export function HeatmapView() {
   useEffect(() => {
     if (!mapContainer.current || map.current || !maplibregl) return;
 
-    // Use user location as center if available, otherwise fallback to Osaka center
-    const initialCenter: [number, number] = userLocation 
-      ? [userLocation.lon, userLocation.lat] 
-      : OSAKA_CENTER;
-
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
@@ -88,8 +86,8 @@ export function HeatmapView() {
           }
         ]
       },
-      center: initialCenter,
-      zoom: userLocation ? 15 : 12, // Higher zoom if we have user location
+      center: OSAKA_CENTER,
+      zoom: 12,
       attributionControl: false
     });
 
@@ -113,10 +111,19 @@ export function HeatmapView() {
 
     // Track map interactions
     map.current.on('zoomend', () => {
+      if (suppressNextMoveEndRef.current) {
+        return;
+      }
+      hasUserInteractedRef.current = true;
       trackMapInteraction('zoom');
     });
 
     map.current.on('moveend', () => {
+      if (suppressNextMoveEndRef.current) {
+        suppressNextMoveEndRef.current = false;
+        return;
+      }
+      hasUserInteractedRef.current = true;
       trackMapInteraction('pan');
     });
 
@@ -126,19 +133,16 @@ export function HeatmapView() {
         map.current = null;
       }
     };
-  }, [maplibregl, userLocation]);
+  }, [maplibregl]);
 
   // Move map to user location when it becomes available
   useEffect(() => {
     if (!map.current || !mapLoaded || !userLocation) return;
 
-    // Only move if we're still at the default Osaka center
-    const currentCenter = map.current.getCenter();
-    const isAtOsakaCenter = Math.abs(currentCenter.lng - OSAKA_CENTER[0]) < 0.01 && 
-                           Math.abs(currentCenter.lat - OSAKA_CENTER[1]) < 0.01;
-
-    if (isAtOsakaCenter) {
+    if (!hasUserInteractedRef.current && !hasAutoCenteredRef.current) {
       console.log('Moving map to user location:', userLocation);
+      suppressNextMoveEndRef.current = true;
+      hasAutoCenteredRef.current = true;
       map.current.flyTo({
         center: [userLocation.lon, userLocation.lat],
         zoom: 15,
@@ -483,6 +487,20 @@ export function HeatmapView() {
     }
   };
 
+  const handleShowCurrentLocation = async () => {
+    trackMapInteraction('get_location_button_click');
+    const freshLocation = await getCurrentLocation({ forceFresh: true });
+    if (freshLocation && map.current) {
+      suppressNextMoveEndRef.current = true;
+      hasAutoCenteredRef.current = true;
+      map.current.flyTo({
+        center: [freshLocation.lon, freshLocation.lat],
+        zoom: 15,
+        duration: 1200,
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Controls */}
@@ -501,10 +519,7 @@ export function HeatmapView() {
           <div className="flex flex-wrap gap-3 items-center">
             {/* User Location Button - Made larger and more prominent */}
             <Button
-              onClick={() => {
-                getCurrentLocation({ forceFresh: true });
-                trackMapInteraction('get_location_button_click');
-              }}
+              onClick={handleShowCurrentLocation}
               size="default"
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
