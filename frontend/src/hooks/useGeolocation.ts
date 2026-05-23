@@ -3,11 +3,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Location } from '@/types';
 
+const AUTO_FETCH_KEY = 'geolocation-auto-fetch';
 const LAST_LOCATION_KEY = 'geolocation-last-location';
 const PERMISSION_GRANTED_KEY = 'geolocation-permission-granted';
+const AUTO_REFRESH_INTERVAL_MS = 20000;
 const WATCH_UPDATE_MIN_INTERVAL_MS = 15000;
 const FRESH_LOCATION_TTL_MS = 2 * 60 * 1000;
 const LAST_KNOWN_LOCATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export const GEOLOCATION_AUTO_FETCH_CHANGED_EVENT = 'geolocation-auto-fetch-changed';
 
 type GeolocationPermissionState = PermissionState | 'unknown';
 type LocationSource = 'fresh' | 'watch' | 'manual' | null;
@@ -52,7 +56,9 @@ export function useGeolocation(enableHighAccuracy = true) {
     loading: false,
     isWatching: false,
   });
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
   const watchIdRef = useRef<number | null>(null);
+  const autoRefreshTimerRef = useRef<number | null>(null);
   const lastWatchUpdateRef = useRef(0);
 
   const saveLastLocation = useCallback((location: Location) => {
@@ -355,11 +361,89 @@ export function useGeolocation(enableHighAccuracy = true) {
     }
   }, []);
 
+  const startAutoRefreshTimer = useCallback(() => {
+    if (typeof window === 'undefined' || autoRefreshTimerRef.current !== null) {
+      return;
+    }
+
+    autoRefreshTimerRef.current = window.setInterval(() => {
+      void getCurrentLocation({ silent: true, forceFresh: true });
+    }, AUTO_REFRESH_INTERVAL_MS);
+  }, [getCurrentLocation]);
+
+  const stopAutoRefreshTimer = useCallback(() => {
+    if (typeof window === 'undefined' || autoRefreshTimerRef.current === null) {
+      return;
+    }
+
+    window.clearInterval(autoRefreshTimerRef.current);
+    autoRefreshTimerRef.current = null;
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    const syncAutoFetchSetting = () => {
+      setAutoFetchEnabled(localStorage.getItem(AUTO_FETCH_KEY) === 'true');
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === AUTO_FETCH_KEY) {
+        syncAutoFetchSetting();
+      }
+    };
+
+    const handleLocalEvent = (event: Event) => {
+      const detail = (event as CustomEvent<{ enabled?: boolean }>).detail;
+      if (typeof detail?.enabled === 'boolean') {
+        setAutoFetchEnabled(detail.enabled);
+      } else {
+        syncAutoFetchSetting();
+      }
+    };
+
+    syncAutoFetchSetting();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, handleLocalEvent as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, handleLocalEvent as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let cancelled = false;
     let permissionStatus: PermissionStatus | null = null;
     let permissionChangeListener: (() => void) | null = null;
+
+    const stopRealtimeTracking = () => {
+      stopAutoRefreshTimer();
+      stopWatching();
+    };
+
+    const startRealtimeTracking = () => {
+      if (cancelled) return;
+      void getCurrentLocation({ silent: true, forceFresh: true });
+      startWatching();
+      startAutoRefreshTimer();
+    };
+
+    const handlePermissionState = (permissionState: PermissionState) => {
+      setState(prev => ({ ...prev, permissionState }));
+
+      if (permissionState === 'granted') {
+        startRealtimeTracking();
+        return;
+      }
+
+      stopRealtimeTracking();
+      if (permissionState === 'denied') {
+        clearPermissionGranted();
+      }
+    };
 
     const initialize = async () => {
       const saved = loadLastLocation();
@@ -369,23 +453,33 @@ export function useGeolocation(enableHighAccuracy = true) {
         lastLocationAgeMs: saved?.ageMs ?? null,
       }));
 
+      if (!autoFetchEnabled) {
+        stopRealtimeTracking();
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        return;
+      }
+
       const permissionsApi = (navigator as unknown as { permissions?: Permissions }).permissions ?? null;
       if (permissionsApi?.query) {
         try {
           permissionStatus = await permissionsApi.query({ name: 'geolocation' as PermissionName });
-          if (!permissionStatus) return;
+          if (cancelled || !permissionStatus) return;
 
-          setState(prev => ({ ...prev, permissionState: permissionStatus!.state }));
-          if (permissionStatus.state === 'denied') {
-            clearPermissionGranted();
+          handlePermissionState(permissionStatus.state);
+          if (permissionStatus.state === 'prompt') {
+            void getCurrentLocation({ forceFresh: true }).then(freshLocation => {
+              if (freshLocation && !cancelled) {
+                startRealtimeTracking();
+              }
+            });
           }
 
           permissionChangeListener = () => {
-            if (!permissionStatus) return;
-            setState(prev => ({ ...prev, permissionState: permissionStatus!.state }));
-            if (permissionStatus.state === 'denied') {
-              clearPermissionGranted();
-            }
+            if (!permissionStatus || cancelled) return;
+            handlePermissionState(permissionStatus.state);
           };
           permissionStatus.addEventListener?.('change', permissionChangeListener);
           return;
@@ -396,29 +490,43 @@ export function useGeolocation(enableHighAccuracy = true) {
 
       if (hasPermissionBeenGranted()) {
         setState(prev => ({ ...prev, permissionState: 'granted' }));
+        startRealtimeTracking();
       } else {
         setState(prev => ({ ...prev, permissionState: 'prompt' }));
+        stopRealtimeTracking();
+        void getCurrentLocation({ forceFresh: true }).then(freshLocation => {
+          if (freshLocation && !cancelled) {
+            startRealtimeTracking();
+          }
+        });
       }
     };
 
     void initialize();
 
     return () => {
+      cancelled = true;
       if (permissionStatus && permissionChangeListener) {
         permissionStatus.removeEventListener?.('change', permissionChangeListener);
       }
+      stopAutoRefreshTimer();
       stopWatching(true);
     };
   }, [
+    autoFetchEnabled,
     clearPermissionGranted,
+    getCurrentLocation,
     hasPermissionBeenGranted,
     loadLastLocation,
+    startAutoRefreshTimer,
+    startWatching,
+    stopAutoRefreshTimer,
     stopWatching,
   ]);
 
   return {
     ...state,
-    needsPermission: state.permissionState === 'prompt' || state.permissionState === 'denied',
+    needsPermission: autoFetchEnabled && (state.permissionState === 'prompt' || state.permissionState === 'denied'),
     getCurrentLocation,
     clearError,
     setManualLocation,

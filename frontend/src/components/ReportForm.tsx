@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, AlertCircle, CheckCircle, Loader2, Cigarette, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, useGeolocation } from '@/hooks/useGeolocation';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { apiClient } from '@/lib/supabase';
 import { ReportCategory } from '@/types';
@@ -32,7 +32,9 @@ export function ReportForm() {
     location,
     error: locationError,
     loading: locationLoading,
+    isWatching,
     permissionState,
+    needsPermission,
     lastKnownLocation,
     getCurrentLocation,
   } = useGeolocation();
@@ -41,14 +43,28 @@ export function ReportForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
 
-  const handleCategorySelect = (category: ReportCategory) => {
-    setSelectedCategory(category);
-    setSubmitError(null);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('geolocation-auto-fetch');
+      setAutoFetchEnabled(saved === 'true');
+    }
+  }, []);
+
+  const toggleAutoFetch = (enabled: boolean) => {
+    setAutoFetchEnabled(enabled);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('geolocation-auto-fetch', enabled.toString());
+      window.dispatchEvent(new CustomEvent(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, { detail: { enabled } }));
+    }
+    if (enabled) {
+      void getCurrentLocation({ forceFresh: true });
+    }
   };
 
   const handleSubmit = async () => {
-    if (!selectedCategory) return;
+    if (!location || !selectedCategory) return;
 
     if (isBlocked) {
       setSubmitError(`連続投稿を防ぐため、あと${remainingTime}秒お待ちください`);
@@ -59,11 +75,6 @@ export function ReportForm() {
     setSubmitError(null);
 
     try {
-      const reportLocation = location ?? await getCurrentLocation({ forceFresh: true });
-      if (!reportLocation) {
-        return;
-      }
-
       const canSubmit = recordSubmission();
       if (!canSubmit) {
         setSubmitError('短時間に投稿が集中しています。少し時間をおいてから再度お試しください。');
@@ -71,12 +82,12 @@ export function ReportForm() {
       }
 
       await apiClient.submitReport({
-        lat: reportLocation.lat,
-        lon: reportLocation.lon,
+        lat: location.lat,
+        lon: location.lon,
         category: selectedCategory,
       });
 
-      trackReportSubmission(selectedCategory, { lat: reportLocation.lat, lon: reportLocation.lon });
+      trackReportSubmission(selectedCategory, { lat: location.lat, lon: location.lon });
 
       setSubmitSuccess(true);
       setSelectedCategory(null);
@@ -101,29 +112,62 @@ export function ReportForm() {
         <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
 
         <div className="space-y-2">
-          {!location && !locationLoading && !locationError && (
-            <Alert>
-              <MapPin className="h-4 w-4" />
-              <AlertDescription>
-                報告内容を選んで送信ボタンを押すと、現在地の取得許可を確認します。取得できた現在地だけを報告に使います。
-              </AlertDescription>
-            </Alert>
-          )}
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">
+                  自動的に現在位置を取得
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleAutoFetch(!autoFetchEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  autoFetchEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    autoFetchEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+            <p className="text-xs text-blue-700 mt-1">
+              {autoFetchEnabled
+                ? (isWatching
+                    ? '15〜30秒ごとに現在地を自動更新しています'
+                    : needsPermission
+                      ? '位置情報の自動取得にはブラウザの許可が必要です'
+                      : '許可済みの場合は15〜30秒ごとに自動更新します')
+                : '手動で「現在位置を表示」ボタンを押す必要があります'}
+            </p>
+          </div>
 
           {!location && lastKnownLocation && (
             <Alert>
               <MapPin className="h-4 w-4" />
               <AlertDescription>
-                前回の位置情報は保存されていますが、報告には使いません。送信時に現在地を取得します。
+                前回の位置情報は保存されていますが、現在位置としては使用していません。投稿するには現在位置を取得してください。
               </AlertDescription>
             </Alert>
           )}
 
-          {!location && permissionState === 'denied' && !locationLoading && (
+          {!location && autoFetchEnabled && permissionState === 'prompt' && !locationLoading && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                自動取得を有効にするには位置情報の許可が必要です。許可ダイアログで許可するか、現在位置ボタンを押してください。
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!location && autoFetchEnabled && permissionState === 'denied' && !locationLoading && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                位置情報が拒否されています。報告するにはブラウザ設定でこのサイトの位置情報を許可してください。
+                位置情報が拒否されています。ブラウザ設定でこのサイトの位置情報を許可してください。
               </AlertDescription>
             </Alert>
           )}
@@ -131,15 +175,37 @@ export function ReportForm() {
           {locationLoading && (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <AlertDescription>現在地を取得しています...</AlertDescription>
+              <AlertDescription>位置情報を取得中...</AlertDescription>
             </Alert>
           )}
 
           {locationError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{locationError}</AlertDescription>
+              <AlertDescription>
+                {locationError}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => getCurrentLocation({ forceFresh: true })}
+                  className="mt-2"
+                >
+                  再試行
+                </Button>
+              </AlertDescription>
             </Alert>
+          )}
+
+          {!locationLoading && !locationError && (
+            <Button
+              onClick={() => getCurrentLocation({ forceFresh: true })}
+              variant="outline"
+              className="w-full"
+              size="sm"
+            >
+              <MapPin className="h-4 w-4 mr-2" />
+              {location ? '現在位置を更新' : '現在位置を表示'}
+            </Button>
           )}
         </div>
 
@@ -156,8 +222,7 @@ export function ReportForm() {
                   key={key}
                   variant={isSelected ? 'default' : 'outline'}
                   className={`h-auto p-3 justify-start ${isSelected ? config.color : ''}`}
-                  onClick={() => handleCategorySelect(key as ReportCategory)}
-                  disabled={locationLoading || submitting}
+                  onClick={() => setSelectedCategory(key as ReportCategory)}
                 >
                   <Icon className="h-5 w-5 mr-3 flex-shrink-0" />
                   <div className="text-left">
@@ -187,28 +252,28 @@ export function ReportForm() {
 
           <Button
             onClick={handleSubmit}
-            disabled={!selectedCategory || submitting || isBlocked || locationLoading}
+            disabled={!location || !selectedCategory || submitting || isBlocked}
             className={`w-full transition-all duration-200 ${
-              selectedCategory && !submitting && !isBlocked && !locationLoading
+              location && selectedCategory && !submitting && !isBlocked
                 ? 'bg-emerald-500 hover:bg-emerald-600 shadow-lg transform hover:scale-105 border-2 border-emerald-300'
                 : ''
             }`}
             size="lg"
           >
-            {submitting || locationLoading ? (
+            {submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {location ? '送信中...' : '現在地を取得中...'}
+                送信中...
               </>
             ) : isBlocked ? (
               `投稿制限中 (${remainingTime}s)`
-            ) : selectedCategory ? (
+            ) : location && selectedCategory ? (
               <>
                 <CheckCircle className="h-4 w-4 mr-2" />
                 報告を送信
               </>
             ) : (
-              '報告内容を選択してください'
+              '報告を送信'
             )}
           </Button>
         </div>
