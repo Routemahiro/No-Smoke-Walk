@@ -515,30 +515,6 @@ export function HeatmapView() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Primary Actions */}
-          <div className="flex flex-wrap gap-3 items-center">
-            {/* User Location Button - Made larger and more prominent */}
-            <Button
-              onClick={handleShowCurrentLocation}
-              size="default"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <MapPin className="h-5 w-5 mr-2" />
-              現在位置を表示
-            </Button>
-
-            {/* Refresh Button */}
-            <Button
-              onClick={handleRefresh}
-              disabled={loading}
-              size="default"
-              variant="outline"
-              title="現在の表示位置周辺のデータを更新"
-            >
-              <RefreshCw className={`h-5 w-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              表示位置で更新
-            </Button>
-          </div>
 
           {/* Filter Section */}
           <div className="space-y-3">
@@ -670,7 +646,7 @@ export function HeatmapView() {
 
         {/* Active Filters Display */}
         {!loading && (
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md text-xs text-gray-700 z-10">
+          <div className="absolute top-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-lg bg-white/95 px-3 py-2 text-xs text-gray-700 shadow-md backdrop-blur-sm sm:max-w-[calc(100%-5rem)]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">📊 表示中:</span>
               <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
@@ -690,6 +666,29 @@ export function HeatmapView() {
                   すべて
                 </span>
               )}
+            </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Button
+                onClick={handleShowCurrentLocation}
+                size="sm"
+                className="h-8 whitespace-nowrap bg-blue-600 px-2 text-xs text-white hover:bg-blue-700"
+              >
+                <MapPin className="mr-1.5 h-3.5 w-3.5" />
+                現在位置を表示
+              </Button>
+
+              <Button
+                onClick={handleRefresh}
+                disabled={loading}
+                size="sm"
+                variant="outline"
+                className="h-8 whitespace-nowrap px-2 text-xs"
+                title="現在の表示位置周辺のデータを更新"
+              >
+                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                表示位置で更新
+              </Button>
             </div>
           </div>
         )}
