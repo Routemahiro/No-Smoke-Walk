@@ -221,13 +221,13 @@ export function ReportForm() {
                 <Button
                   key={key}
                   variant={isSelected ? 'default' : 'outline'}
-                  className={`h-auto p-3 justify-start ${isSelected ? config.color : ''}`}
+                  className={`h-auto w-full items-start justify-start whitespace-normal p-3 text-left ${isSelected ? config.color : ''}`}
                   onClick={() => setSelectedCategory(key as ReportCategory)}
                 >
                   <Icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
+                  <div className="min-w-0 text-left">
                     <div className="font-medium">{config.label}</div>
-                    <div className="text-xs opacity-90">{config.description}</div>
+                    <div className="break-words text-xs opacity-90">{config.description}</div>
                   </div>
                 </Button>
               );

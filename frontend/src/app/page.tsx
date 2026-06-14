@@ -25,8 +25,8 @@ export default function Home() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 0 500 100" className="h-16">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" height="80" viewBox="0 0 500 100" className="h-10 flex-shrink-0 sm:h-16">
                 <rect x="2" y="2" width="496" height="96" fill="none" stroke="#0F2346" strokeWidth="4" rx="8" />
                 <text
                   x="250"
@@ -43,9 +43,9 @@ export default function Home() {
                   NO-SMOKE ALERT Osaka
                 </text>
               </svg>
-              <div>
-                <p className="text-sm text-gray-600">
-                  大阪府の迷惑タバコ報告システム
+              <div className="min-w-0">
+                <p className="text-xs leading-tight text-gray-600 sm:text-sm">
+                  大阪市の迷惑タバコ報告システム
                 </p>
               </div>
             </div>
@@ -54,9 +54,22 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section className="mb-6 rounded-lg border bg-white p-5 shadow-sm">
+          <div className="max-w-3xl space-y-3">
+            <p className="text-sm font-medium text-blue-700">No-Smoke Alert</p>
+            <h1 className="text-2xl font-bold tracking-normal text-gray-900 sm:text-3xl">
+              大阪市の歩きタバコ・迷惑喫煙を見かけたら、その場で報告
+            </h1>
+            <p className="text-sm leading-6 text-gray-600 sm:text-base">
+              ブラウザで現在地を取得し、歩きタバコまたは立ち止まり喫煙を選んで送信します。
+              集まった報告は、市民報告に基づく参考情報としてヒートマップで確認できます。
+            </p>
+          </div>
+        </section>
+
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Report Form */}
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             <ReportForm />
             
             {/* Navigation Links */}
@@ -71,11 +84,11 @@ export default function Home() {
                       <Map className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">
+                      <h2 className="font-medium text-gray-900">
                         ヒートマップを見る
-                      </h3>
+                      </h2>
                       <p className="text-sm text-gray-600">
-                        報告データの分布状況を地図上で確認
+                        大阪市内の歩きタバコ・迷惑喫煙の報告傾向を参考地図で確認
                       </p>
                     </div>
                   </div>
@@ -85,27 +98,31 @@ export default function Home() {
           </div>
 
           {/* Information Panel */}
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h2 className="text-lg font-semibold mb-4">
-                このサービスについて
+                No-Smoke Alertとは
               </h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
-                  大阪府内で迷惑タバコを発見した皆様から情報をお送りいただき、
-                  行政指導の効率化を図るシステムです。
+                  大阪市内で歩きタバコや迷惑喫煙を見かけたときに、
+                  ワンボタンで場所と状況を報告できるサービスです。
                 </p>
                 <p>
-                  報告いただいた情報は匿名情報として保存し、
-                  大阪府指導員の巡回ルート最適化に活用するようにしてもらいます。
+                  集まった報告はヒートマップとして可視化し、
+                  報告が集まっている可能性のあるエリアを把握する材料にできます。
+                </p>
+                <p>
+                  本サービスは大阪市公式サービスではありません。
+                  報告データは市民報告に基づく参考情報であり、行政による対応を保証するものではありません。
                 </p>
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold mb-4">
+              <h2 className="text-lg font-semibold mb-4">
                 報告対象
-              </h3>
+              </h2>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -118,20 +135,40 @@ export default function Home() {
                   <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
                   <div>
                     <h4 className="font-medium">立ち止まり喫煙</h4>
-                    <p className="text-sm text-gray-600">禁煙エリアで立ち止まって喫煙している人を発見した場合</p>
+                    <p className="text-sm text-gray-600">適切な喫煙場所ではないと思われる場所で立ち止まって喫煙している人を見かけた場合</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-semibold mb-4">
+              <h2 className="text-lg font-semibold mb-4">
                 プライバシー保護
-              </h3>
+              </h2>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>• 位置情報は報告処理にのみ使用されます</p>
-                <p>• IPアドレスはハッシュ化され、個人の特定はできません</p>
-                <p>• 公開される情報には個人情報は含まれません</p>
+                <p>• 位置情報は報告受付、地図表示、不正対策、集計のために利用します</p>
+                <p>• 報告は個人の特定や晒しを目的とせず、集計して扱います</p>
+                <p>• 詳細はプライバシーポリシーをご確認ください</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h2 className="text-lg font-semibold mb-4">
+                よくある確認
+              </h2>
+              <div className="space-y-4 text-sm text-gray-600">
+                <div>
+                  <h3 className="font-medium text-gray-900">大阪市公式サービスですか？</h3>
+                  <p>いいえ。No-Smoke Alertは大阪市公式サービスではなく、行政機関との公式な連携を示すものでもありません。</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">報告は違反の証明になりますか？</h3>
+                  <p>報告データは市民報告に基づく参考情報です。実際の違反事実や行政対応を保証するものではありません。</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">集まった報告はどう使いますか？</h3>
+                  <p>個人や施設の特定ではなく、報告が集まっている可能性のあるエリアを把握するために集計して扱います。</p>
+                </div>
               </div>
             </div>
           </div>

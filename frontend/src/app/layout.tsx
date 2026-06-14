@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from 'next';
 // import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
-import "./globals.css";
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import './globals.css';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
 // Temporary: Use system fonts to avoid build timeout
 // const geistSans = Geist({
@@ -20,13 +20,60 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 //   weight: ["400", "500", "600", "700"],
 // });
 
+const siteUrl = 'https://no-smoke-alert.com';
+const siteName = 'No-Smoke Alert';
+const siteTitle = `${siteName} | 大阪市の歩きタバコ・迷惑喫煙報告マップ`;
+const siteDescription =
+  'No-Smoke Alertは、大阪市の歩きタバコ・迷惑喫煙の報告を集め、報告が集まっている可能性のあるエリアを地図で可視化するサービスです。';
+
 export const metadata: Metadata = {
-  title: "NO-SMOKE ALERT",
-  description: "大阪府内の迷惑タバコ報告システム。歩きタバコや禁煙エリアでの喫煙を報告し、街をきれいにしましょう。",
-  keywords: ["禁煙", "歩きタバコ", "大阪", "迷惑タバコ", "報告", "マナー"],
-  authors: [{ name: "NO-SMOKE ALERT" }],
-  creator: "NO-SMOKE ALERT",
-  publisher: "NO-SMOKE ALERT",
+  metadataBase: new URL(siteUrl),
+  applicationName: siteName,
+  title: {
+    default: siteTitle,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  keywords: [
+    'No-Smoke Alert',
+    '大阪市 歩きタバコ',
+    '大阪市 迷惑喫煙',
+    '歩きタバコ 報告',
+    '迷惑喫煙 報告',
+    '喫煙マナー',
+    'ヒートマップ',
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    url: '/',
+    siteName,
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: 'summary',
+    title: siteTitle,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
+  },
+  category: 'civic technology',
   formatDetection: {
     email: false,
     address: false,
@@ -46,11 +93,12 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: '#2563eb',
   colorScheme: 'light',
 };
@@ -62,9 +110,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body
-        className="font-sans antialiased"
-      >
+      <body className="font-sans antialiased">
         <GoogleAnalytics measurementId="G-3F4H0CTST0" />
         {children}
       </body>

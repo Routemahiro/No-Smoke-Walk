@@ -511,10 +511,16 @@ export function HeatmapView() {
             ヒートマップ表示
           </CardTitle>
           <CardDescription>
-            大阪府内の迷惑タバコ報告データをヒートマップで可視化
+            大阪市内の迷惑タバコ報告データをヒートマップで可視化
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              本サービスは大阪市公式サービスではありません。表示内容は市民報告に基づく参考情報であり、実際の違反や行政対応を示すものではありません。
+            </AlertDescription>
+          </Alert>
 
           {/* Filter Section */}
           <div className="space-y-3">

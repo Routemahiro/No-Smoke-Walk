@@ -32,12 +32,12 @@ export default function HeatmapPage() {
                 <ArrowLeft className="h-4 w-4" />
                 ホームに戻る
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  🗺️ ヒートマップ表示
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold leading-tight text-gray-900">
+                  大阪市の歩きタバコ・迷惑喫煙ヒートマップ
                 </h1>
                 <p className="text-sm text-gray-600">
-                  大阪府内の迷惑タバコ報告データの可視化
+                  市民報告に基づく参考地図
                 </p>
               </div>
             </div>
@@ -46,6 +46,29 @@ export default function HeatmapPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <section className="rounded-lg border bg-white p-5 shadow-sm">
+          <div className="max-w-4xl space-y-3">
+            <h2 className="text-xl font-semibold text-gray-900">
+              報告が集まっている可能性のあるエリアを確認
+            </h2>
+            <p className="text-sm leading-6 text-gray-600 sm:text-base">
+              このヒートマップは、大阪市内で寄せられた歩きタバコ・立ち止まり喫煙の報告傾向を確認するための参考表示です。
+              個別の違反事実、実際の発生件数、行政対応の必要性を断定するものではありません。
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <Link
+                href="/"
+                className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+              >
+                歩きタバコ・迷惑喫煙を報告する
+              </Link>
+              <span className="text-gray-600">
+                本サービスは大阪市公式サービスではありません。
+              </span>
+            </div>
+          </div>
+        </section>
+
         <HeatmapView />
         
         {/* Ad placement at bottom of heatmap */}

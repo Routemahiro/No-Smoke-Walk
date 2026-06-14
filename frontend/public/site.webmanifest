@@ -1,8 +1,9 @@
 {
-  "name": "NO-SMOKE ALERT",
-  "short_name": "NO-SMOKE ALERT",
-  "description": "大阪府内の迷惑タバコ報告システム",
+  "name": "No-Smoke Alert",
+  "short_name": "No-Smoke",
+  "description": "大阪市の歩きタバコ・迷惑喫煙の報告を集め、報告が集まっている可能性のあるエリアを地図で可視化するサービスです。",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
