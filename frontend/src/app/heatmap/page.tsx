@@ -37,7 +37,7 @@ export default function HeatmapPage() {
                   大阪市の歩きタバコ・迷惑喫煙ヒートマップ
                 </h1>
                 <p className="text-sm text-gray-600">
-                  市民報告に基づく参考地図
+                  みなさまのご報告で出来上がる、タバコの煙を避けるための地図
                 </p>
               </div>
             </div>
@@ -49,7 +49,7 @@ export default function HeatmapPage() {
         <section className="rounded-lg border bg-white p-5 shadow-sm">
           <div className="max-w-4xl space-y-3">
             <h2 className="text-xl font-semibold text-gray-900">
-              報告が集まっている可能性のあるエリアを確認
+              報告が集まっているエリアを確認
             </h2>
             <p className="text-sm leading-6 text-gray-600 sm:text-base">
               このヒートマップは、大阪市内で寄せられた歩きタバコ・立ち止まり喫煙の報告傾向を確認するための参考表示です。

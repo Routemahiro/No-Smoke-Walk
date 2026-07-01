@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RefreshCw, AlertCircle, Map, BarChart, MapPin } from 'lucide-react';
+import { RefreshCw, AlertCircle, Map, BarChart, MapPin, ChevronDown } from 'lucide-react';
 import { useHeatmap } from '@/hooks/useHeatmap';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { trackMapInteraction } from '@/components/GoogleAnalytics';
@@ -505,91 +505,91 @@ export function HeatmapView() {
     <div className="space-y-4">
       {/* Controls */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map className="h-5 w-5" />
-            ヒートマップ表示
-          </CardTitle>
-          <CardDescription>
-            大阪市内の迷惑タバコ報告データをヒートマップで可視化
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              本サービスは大阪市公式サービスではありません。表示内容は市民報告に基づく参考情報であり、実際の違反や行政対応を示すものではありません。
-            </AlertDescription>
-          </Alert>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-6 text-left [&::-webkit-details-marker]:hidden">
+            <span className="min-w-0 space-y-1">
+              <span className="flex items-center gap-2 leading-none font-semibold">
+                <Map className="h-5 w-5" />
+                ヒートマップ表示
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                大阪市内の迷惑タバコ報告データをヒートマップで可視化
+              </span>
+            </span>
+            <ChevronDown
+              className="mt-1 h-5 w-5 flex-shrink-0 text-gray-500 transition-transform group-open:rotate-180"
+            />
+          </summary>
+          <CardContent className="space-y-4">
+            {/* Filter Section */}
+            <div className="space-y-3">
+              {/* Days Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  📅 表示期間
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[7, 30, 90, 180].map((days) => (
+                    <Button
+                      key={days}
+                      onClick={() => {
+                        setFilters(prev => ({ ...prev, days }));
+                        trackMapInteraction('filter_days_change', { days });
+                      }}
+                      size="sm"
+                      variant={filters.days === days ? 'default' : 'outline'}
+                      className={filters.days === days ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                    >
+                      {days}日間
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Filter Section */}
-          <div className="space-y-3">
-            {/* Days Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                📅 表示期間
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {[7, 30, 90, 180].map((days) => (
+              {/* Category Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  🏷️ カテゴリ
+                </label>
+                <div className="flex flex-wrap gap-2">
                   <Button
-                    key={days}
                     onClick={() => {
-                      setFilters(prev => ({ ...prev, days }));
-                      trackMapInteraction('filter_days_change', { days });
+                      setFilters(prev => ({ ...prev, category: undefined }));
+                      trackMapInteraction('filter_category_change', { category: 'all' });
                     }}
                     size="sm"
-                    variant={filters.days === days ? 'default' : 'outline'}
-                    className={filters.days === days ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                    variant={!filters.category ? 'default' : 'outline'}
+                    className={!filters.category ? 'bg-blue-600 hover:bg-blue-700' : ''}
                   >
-                    {days}日間
+                    すべて
                   </Button>
-                ))}
+                  <Button
+                    onClick={() => {
+                      setFilters(prev => ({ ...prev, category: 'walk_smoke' }));
+                      trackMapInteraction('filter_category_change', { category: 'walk_smoke' });
+                    }}
+                    size="sm"
+                    variant={filters.category === 'walk_smoke' ? 'default' : 'outline'}
+                    className={filters.category === 'walk_smoke' ? 'bg-red-600 hover:bg-red-700' : ''}
+                  >
+                    🚶 歩きタバコ
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setFilters(prev => ({ ...prev, category: 'stand_smoke' }));
+                      trackMapInteraction('filter_category_change', { category: 'stand_smoke' });
+                    }}
+                    size="sm"
+                    variant={filters.category === 'stand_smoke' ? 'default' : 'outline'}
+                    className={filters.category === 'stand_smoke' ? 'bg-orange-600 hover:bg-orange-700' : ''}
+                  >
+                    🧍 立ち止まり喫煙
+                  </Button>
+                </div>
               </div>
             </div>
-
-            {/* Category Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                🏷️ カテゴリ
-              </label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={() => {
-                    setFilters(prev => ({ ...prev, category: undefined }));
-                    trackMapInteraction('filter_category_change', { category: 'all' });
-                  }}
-                  size="sm"
-                  variant={!filters.category ? 'default' : 'outline'}
-                  className={!filters.category ? 'bg-blue-600 hover:bg-blue-700' : ''}
-                >
-                  すべて
-                </Button>
-                <Button
-                  onClick={() => {
-                    setFilters(prev => ({ ...prev, category: 'walk_smoke' }));
-                    trackMapInteraction('filter_category_change', { category: 'walk_smoke' });
-                  }}
-                  size="sm"
-                  variant={filters.category === 'walk_smoke' ? 'default' : 'outline'}
-                  className={filters.category === 'walk_smoke' ? 'bg-red-600 hover:bg-red-700' : ''}
-                >
-                  🚶 歩きタバコ
-                </Button>
-                <Button
-                  onClick={() => {
-                    setFilters(prev => ({ ...prev, category: 'stand_smoke' }));
-                    trackMapInteraction('filter_category_change', { category: 'stand_smoke' });
-                  }}
-                  size="sm"
-                  variant={filters.category === 'stand_smoke' ? 'default' : 'outline'}
-                  className={filters.category === 'stand_smoke' ? 'bg-orange-600 hover:bg-orange-700' : ''}
-                >
-                  🧍 立ち止まり喫煙
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </details>
       </Card>
 
       {/* Error Alert */}
@@ -602,31 +602,36 @@ export function HeatmapView() {
 
       {/* Legend - Moved above map for better visibility */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart className="h-5 w-5" />
-            凡例・使い方
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-red-500"></div>
-                <span className="text-sm font-medium">歩きタバコ</span>
+        <details className="group">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 text-left [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2 leading-none font-semibold">
+              <BarChart className="h-5 w-5" />
+              凡例・使い方
+            </span>
+            <ChevronDown
+              className="h-5 w-5 flex-shrink-0 text-gray-500 transition-transform group-open:rotate-180"
+            />
+          </summary>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-red-500"></div>
+                  <span className="text-sm font-medium">歩きタバコ</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-orange-500"></div>
+                  <span className="text-sm font-medium">立ち止まり喫煙</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-orange-500"></div>
-                <span className="text-sm font-medium">立ち止まり喫煙</span>
+              <div className="pt-2 border-t text-xs text-gray-600 space-y-1">
+                <p>💡 <strong>ヒートマップの見方:</strong> 濃い赤色ほど報告が集中</p>
+                <p>🔍 <strong>詳細表示:</strong> ズームインでポイント表示、クリックで詳細</p>
+                <p>📍 <strong>青い円:</strong> あなたの現在位置</p>
               </div>
             </div>
-            <div className="pt-2 border-t text-xs text-gray-600 space-y-1">
-              <p>💡 <strong>ヒートマップの見方:</strong> 濃い赤色ほど報告が集中</p>
-              <p>🔍 <strong>詳細表示:</strong> ズームインでポイント表示、クリックで詳細</p>
-              <p>📍 <strong>青い円:</strong> あなたの現在位置</p>
-            </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </details>
       </Card>
 
       {/* Map Container */}
