@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 // import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
 import './globals.css';
+import { ClientErrorReporter } from '@/components/ClientErrorReporter';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 
 // Temporary: Use system fonts to avoid build timeout
@@ -112,6 +113,7 @@ export default function RootLayout({
     <html lang="ja">
       <body className="font-sans antialiased">
         <GoogleAnalytics measurementId="G-3F4H0CTST0" />
+        <ClientErrorReporter />
         {children}
       </body>
     </html>

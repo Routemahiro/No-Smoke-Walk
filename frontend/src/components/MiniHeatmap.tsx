@@ -68,9 +68,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
   useEffect(() => {
     if (!mapContainer.current || map.current || !maplibregl) return;
 
-    const initialCenter = userLocation 
-      ? [userLocation.lon, userLocation.lat] as [number, number]
-      : [135.5023, 34.6937] as [number, number];
+    const initialCenter = [135.5023, 34.6937] as [number, number];
 
     // Multiple event listeners to ensure readiness
     let loadComplete = false;
@@ -99,7 +97,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
           ]
         },
         center: initialCenter,
-        zoom: userLocation ? 12 : 10,
+        zoom: 10,
         interactive: true,
         attributionControl: false
       });
@@ -167,7 +165,7 @@ export function MiniHeatmap({ userLocation }: MiniHeatmapProps) {
         map.current = null;
       }
     };
-  }, [maplibregl, userLocation]);
+  }, [maplibregl]);
 
   // Add user location marker when ready
   useEffect(() => {

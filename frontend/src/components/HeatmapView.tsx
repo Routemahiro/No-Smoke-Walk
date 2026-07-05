@@ -28,6 +28,7 @@ export function HeatmapView() {
   const hasAutoCenteredRef = useRef(false);
   const [maplibregl, setMaplibregl] = useState<typeof import('maplibre-gl') | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapUnavailableMessage, setMapUnavailableMessage] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     days: 180, // 6ヶ月
     category: undefined, // 全カテゴリ
@@ -52,9 +53,11 @@ export function HeatmapView() {
         console.log('🗺️ Loading MapLibre GL for HeatmapView...');
         const maplib = await import('maplibre-gl');
         console.log('🗺️ MapLibre GL loaded successfully for HeatmapView');
+        setMapUnavailableMessage(null);
         setMaplibregl(maplib.default);
       } catch (error) {
         console.error('Failed to load MapLibre GL:', error);
+        setMapUnavailableMessage('この環境では地図を読み込めませんでした。ブラウザの設定や通信環境を確認して、ページを再読み込みしてください。');
       }
     };
     loadMapLibre();
@@ -62,78 +65,89 @@ export function HeatmapView() {
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current || !maplibregl) return;
+    if (!mapContainer.current || map.current || !maplibregl || mapUnavailableMessage) return;
 
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          }
+    try {
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: {
+          version: 8,
+          sources: {
+            'osm': {
+              type: 'raster',
+              tiles: [
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              ],
+              tileSize: 256,
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+          },
+          layers: [
+            {
+              id: 'osm',
+              type: 'raster',
+              source: 'osm'
+            }
+          ]
         },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm'
-          }
-        ]
-      },
-      center: OSAKA_CENTER,
-      zoom: 12,
-      attributionControl: false
-    });
+        center: OSAKA_CENTER,
+        zoom: 12,
+        attributionControl: false
+      });
 
-    // Add attribution
-    map.current.addControl(new maplibregl.AttributionControl(), 'bottom-right');
-    
-    // Add navigation controls
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+      // Add attribution
+      map.current.addControl(new maplibregl.AttributionControl(), 'bottom-right');
 
-    map.current.on('load', () => {
-      console.log('Map loaded event fired');
-      setMapLoaded(true);
-      trackMapInteraction('heatmap_loaded');
-    });
+      // Add navigation controls
+      map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-    // Also listen for when the map is completely ready
-    map.current.on('idle', () => {
-      console.log('Map idle event fired - fully ready');
-      setMapLoaded(true);
-    });
+      map.current.on('load', () => {
+        console.log('Map loaded event fired');
+        setMapLoaded(true);
+        trackMapInteraction('heatmap_loaded');
+      });
 
-    // Track map interactions
-    map.current.on('zoomend', () => {
-      if (suppressNextMoveEndRef.current) {
-        return;
-      }
-      hasUserInteractedRef.current = true;
-      trackMapInteraction('zoom');
-    });
+      // Also listen for when the map is completely ready
+      map.current.on('idle', () => {
+        console.log('Map idle event fired - fully ready');
+        setMapLoaded(true);
+      });
 
-    map.current.on('moveend', () => {
-      if (suppressNextMoveEndRef.current) {
-        suppressNextMoveEndRef.current = false;
-        return;
-      }
-      hasUserInteractedRef.current = true;
-      trackMapInteraction('pan');
-    });
+      // Track map interactions
+      map.current.on('zoomend', () => {
+        if (suppressNextMoveEndRef.current) {
+          return;
+        }
+        hasUserInteractedRef.current = true;
+        trackMapInteraction('zoom');
+      });
 
-    return () => {
+      map.current.on('moveend', () => {
+        if (suppressNextMoveEndRef.current) {
+          suppressNextMoveEndRef.current = false;
+          return;
+        }
+        hasUserInteractedRef.current = true;
+        trackMapInteraction('pan');
+      });
+    } catch (error) {
+      console.error('Failed to initialize heatmap map:', error);
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
+      setMapLoaded(false);
+      setMapUnavailableMessage('この環境では地図を表示できません。WebGLが無効、またはブラウザが地図表示に対応していない可能性があります。');
+    }
+
+    return () => {
+      if (map.current) {
+        setMapLoaded(false);
+        map.current.remove();
+        map.current = null;
+      }
     };
-  }, [maplibregl]);
+  }, [maplibregl, mapUnavailableMessage]);
 
   // Move map to user location when it becomes available
   useEffect(() => {
@@ -641,9 +655,18 @@ export function HeatmapView() {
           className="w-full h-[600px] bg-gray-100 rounded-lg border shadow-md"
           style={{ minHeight: '600px' }}
         />
+
+        {mapUnavailableMessage && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-white/90 p-4">
+            <Alert variant="destructive" className="max-w-lg">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{mapUnavailableMessage}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         
         {/* Enhanced Loading Overlay */}
-        {loading && (
+        {loading && !mapUnavailableMessage && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
             <div className="flex flex-col items-center gap-3 bg-white px-6 py-4 rounded-lg shadow-lg border-2 border-blue-200">
               <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
@@ -656,7 +679,7 @@ export function HeatmapView() {
         )}
 
         {/* Active Filters Display */}
-        {!loading && (
+        {!loading && !mapUnavailableMessage && (
           <div className="absolute top-4 left-4 z-10 max-w-[calc(100%-2rem)] rounded-lg bg-white/95 px-3 py-2 text-xs text-gray-700 shadow-md backdrop-blur-sm sm:max-w-[calc(100%-5rem)]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">📊 表示中:</span>

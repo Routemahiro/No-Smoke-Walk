@@ -47,15 +47,23 @@ export function ReportForm() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('geolocation-auto-fetch');
-      setAutoFetchEnabled(saved === 'true');
+      try {
+        const saved = localStorage.getItem('geolocation-auto-fetch');
+        setAutoFetchEnabled(saved === 'true');
+      } catch {
+        setAutoFetchEnabled(false);
+      }
     }
   }, []);
 
   const toggleAutoFetch = (enabled: boolean) => {
     setAutoFetchEnabled(enabled);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('geolocation-auto-fetch', enabled.toString());
+      try {
+        localStorage.setItem('geolocation-auto-fetch', enabled.toString());
+      } catch {
+        // Storage may be unavailable in private or restricted browsing modes.
+      }
       window.dispatchEvent(new CustomEvent(GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, { detail: { enabled } }));
     }
     if (enabled) {

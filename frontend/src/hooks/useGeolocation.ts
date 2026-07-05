@@ -384,7 +384,11 @@ export function useGeolocation(enableHighAccuracy = true) {
     if (typeof window === 'undefined') return;
 
     const syncAutoFetchSetting = () => {
-      setAutoFetchEnabled(localStorage.getItem(AUTO_FETCH_KEY) === 'true');
+      try {
+        setAutoFetchEnabled(localStorage.getItem(AUTO_FETCH_KEY) === 'true');
+      } catch {
+        setAutoFetchEnabled(false);
+      }
     };
 
     const handleStorage = (event: StorageEvent) => {
