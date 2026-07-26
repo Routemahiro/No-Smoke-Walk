@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { HeatmapData } from '@/types';
 
 const DEFAULT_NEARBY_RADIUS_METERS = 400;

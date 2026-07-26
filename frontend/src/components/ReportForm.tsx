@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GEOLOCATION_AUTO_FETCH_CHANGED_EVENT, useGeolocation } from '@/hooks/useGeolocation';
 import { useRateLimit } from '@/hooks/useRateLimit';
-import { apiClient } from '@/lib/supabase';
+import { apiClient } from '@/lib/apiClient';
 import { ReportCategory } from '@/types';
 import { MiniHeatmap } from '@/components/MiniHeatmap';
 import { trackReportSubmission } from '@/components/GoogleAnalytics';

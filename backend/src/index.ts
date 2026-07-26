@@ -3,16 +3,29 @@ import { handleHeatmapRequest, handleHeatmapStats } from './handlers/heatmap';
 import { handleExportCSV, handleExportExcel } from './handlers/export';
 import { Env } from './types';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+function withCors(response: Response): Response {
+  const headers = new Headers(response.headers);
+
+  Object.entries(corsHeaders).forEach(([name, value]) => {
+    headers.set(name, value);
+  });
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    
-    // CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    };
 
     // Handle CORS preflight
     if (request.method === 'OPTIONS') {
@@ -50,27 +63,27 @@ export default {
     }
 
     if (url.pathname === '/api/reports' && request.method === 'POST') {
-      return handleReportSubmission(request, env);
+      return withCors(await handleReportSubmission(request, env));
     }
 
     if (url.pathname === '/api/heatmap' && request.method === 'GET') {
-      return handleHeatmapRequest(request, env);
+      return withCors(await handleHeatmapRequest(request, env));
     }
 
     if (url.pathname === '/api/heatmap/stats' && request.method === 'GET') {
-      return handleHeatmapStats(request, env);
+      return withCors(await handleHeatmapStats(request, env));
     }
 
     if (url.pathname === '/api/export/csv' && request.method === 'GET') {
-      return handleExportCSV(request, env);
+      return withCors(await handleExportCSV(request, env));
     }
 
     if (url.pathname === '/api/admin/export/csv' && request.method === 'GET') {
-      return handleExportCSV(request, env);
+      return withCors(await handleExportCSV(request, env));
     }
 
     if (url.pathname === '/api/admin/export/excel' && request.method === 'GET') {
-      return handleExportExcel(request, env);
+      return withCors(await handleExportExcel(request, env));
     }
 
     // 404 for other routes

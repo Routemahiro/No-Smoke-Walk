@@ -71,9 +71,13 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
     const location = await getLocationName(lat, lon);
 
     // Insert report using HTTP API
+    // RLS only permits the service role to insert reports. Keep the anon key as
+    // a development fallback so the API returns Supabase's explicit error when
+    // a local environment has not configured the service role yet.
+    const writeKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
     const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports`, {
       method: 'POST',
-      headers: createSupabaseHeaders(env.SUPABASE_ANON_KEY, {
+      headers: createSupabaseHeaders(writeKey, {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       }),
