@@ -247,7 +247,7 @@ export function ReportForm() {
           {submitError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{submitError}</AlertDescription>
+              <AlertDescription className="whitespace-pre-line">{submitError}</AlertDescription>
             </Alert>
           )}
 

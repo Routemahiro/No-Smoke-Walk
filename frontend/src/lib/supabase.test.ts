@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import { apiClient } from './apiClient';
+import { apiClient, REPORT_SERVICE_UNAVAILABLE_MESSAGE } from './apiClient';
 
 describe('apiClient.submitReport', () => {
   const originalFetch = global.fetch;
@@ -19,7 +19,7 @@ describe('apiClient.submitReport', () => {
       lat: 34.6937,
       lon: 135.5023,
       category: 'walk_smoke',
-    })).rejects.toThrow('報告サーバーに接続できません。時間をおいてからもう一度お試しください。');
+    })).rejects.toThrow(REPORT_SERVICE_UNAVAILABLE_MESSAGE);
   });
 
   it('shows a stable service error when the API cannot save the report', async () => {
@@ -39,6 +39,6 @@ describe('apiClient.submitReport', () => {
       lat: 34.6937,
       lon: 135.5023,
       category: 'stand_smoke',
-    })).rejects.toThrow('現在、報告を保存できません。時間をおいてからもう一度お試しください。');
+    })).rejects.toThrow(REPORT_SERVICE_UNAVAILABLE_MESSAGE);
   });
 });
