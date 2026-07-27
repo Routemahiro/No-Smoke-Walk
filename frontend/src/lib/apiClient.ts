@@ -2,6 +2,12 @@ type ApiErrorBody = {
   error?: unknown;
 };
 
+export const REPORT_SERVICE_UNAVAILABLE_MESSAGE = [
+  '報告にご協力いただき、ありがとうございます。',
+  '申し訳ありませんが、現在サービスに不具合が発生しており、今回のご報告は送信が完了していません。',
+  'お手数ですが、少し時間をおいてから再度お試しください。皆さまからの報告が、このサービスを支える大切な力になっています。復旧に向けて対応を進めてまいります。',
+].join('\n');
+
 async function readApiError(response: Response): Promise<string | null> {
   try {
     const body = await response.json() as ApiErrorBody;
@@ -32,7 +38,7 @@ export const apiClient = {
       });
     } catch (error) {
       console.error('Report submission connection failed:', error);
-      throw new Error('報告サーバーに接続できません。時間をおいてからもう一度お試しください。');
+      throw new Error(REPORT_SERVICE_UNAVAILABLE_MESSAGE);
     }
 
     if (!response.ok) {
@@ -47,7 +53,7 @@ export const apiClient = {
       }
 
       if (response.status >= 500) {
-        throw new Error('現在、報告を保存できません。時間をおいてからもう一度お試しください。');
+        throw new Error(REPORT_SERVICE_UNAVAILABLE_MESSAGE);
       }
 
       throw new Error(apiError || '報告の送信に失敗しました。入力内容を確認して再度お試しください。');
