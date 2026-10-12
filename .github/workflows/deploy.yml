@@ -120,13 +120,14 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        # cloudflare/pages-action was removed from GitHub; deploy with wrangler instead.
+        # PRs deploy to a preview branch; pushes to main deploy to production.
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: no-smoke-walk
-          directory: ./frontend/out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: '3'
+          command: pages deploy ./frontend/out --project-name=no-smoke-walk --branch=${{ github.head_ref || github.ref_name }} --commit-dirty=true
 
   # Deploy Backend to Cloudflare Workers
   deploy-backend:
