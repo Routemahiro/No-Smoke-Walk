@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 // import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
 import { Map } from 'lucide-react';
-import { NinjaAd } from '@/components/NinjaAd';
 
 // Dynamically import ReportForm to avoid SSR issues
 const ReportForm = dynamic(() => import('@/components/ReportForm').then(mod => ({ default: mod.ReportForm })), {
@@ -173,11 +172,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
-        {/* Ninja Ad - placed outside the grid layout */}
-        <div className="mt-12 flex justify-center">
-          <NinjaAd adId="ninja-ad-1" className="max-w-lg" />
-        </div>
+
       </main>
 
       <footer className="bg-white border-t mt-12">
