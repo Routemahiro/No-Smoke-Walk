@@ -89,6 +89,14 @@ export default function Home() {
             
             {/* Navigation Links */}
             <div className="space-y-4">
+              <div className="rounded-lg border bg-white p-4">
+                <p className="mb-2 text-sm font-medium text-gray-900">エリア別の喫煙所と報告</p>
+                <ul className="space-y-1 text-sm">
+                  <li><Link className="text-blue-700 underline" href="/area/namba-shinsaibashi/">難波・心斎橋</Link></li>
+                  <li><Link className="text-blue-700 underline" href="/area/umeda/">梅田</Link></li>
+                  <li><Link className="text-blue-700 underline" href="/area/shin-osaka/">新大阪駅</Link></li>
+                </ul>
+              </div>
               <Link 
                 href="/heatmap"
                 className="block w-full max-w-md mx-auto"
