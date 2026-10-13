@@ -36,7 +36,7 @@ export const AREAS: AreaConfig[] = [
     radiusM: 1000,
     intro:
       '難波から心斎橋にかけては、駅・商店街・繁華街が続き、人通りの多いエリアです。このページでは、近くの喫煙所の探し方と、このあたりで寄せられた歩きタバコ・立ち止まり喫煙の報告をまとめています。',
-    spotCount: 47,
+    spotCount: 49,
     spotExamples: ['なんば喫煙所', '三休橋喫煙所', '東心斎橋喫煙所'],
     cityListUrl: `${'https://www.city.osaka.lg.jp/kankyo/page/0000607135.html'}#chuouku`,
   },
