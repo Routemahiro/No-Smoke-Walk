@@ -23,11 +23,8 @@ export const ds = {
     'inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-shadow hover:bg-blue-700 hover:shadow-md',
   secondary:
     'inline-flex items-center justify-center gap-2 rounded-lg border bg-white px-3 py-2 text-sm font-medium text-blue-700 shadow-sm hover:shadow-md',
-  // Category accents: only as small dots / icon chips, never as full-bleed fills.
-  category: {
-    walk_smoke: { dot: 'bg-red-500', chip: 'bg-red-50 text-red-600' },
-    stand_smoke: { dot: 'bg-orange-500', chip: 'bg-orange-50 text-orange-600' },
-  },
+  // Icons: gray/blue only (same as the top page's icon chip). No red/orange for report types.
+  iconChipTone: 'bg-blue-100 text-blue-600',
   notice: {
     info: 'rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900',
     error: 'rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800',

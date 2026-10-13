@@ -13,6 +13,7 @@ import { MiniHeatmap } from '@/components/MiniHeatmap';
 import { trackReportSubmission } from '@/components/GoogleAnalytics';
 import { AddToHomeHint } from '@/components/AddToHomeHint';
 import { ds, Notice } from '@/components/ds';
+import { LOCATION_DENIED_COPY } from '@/lib/locationDeniedCopy';
 
 const CATEGORY_CONFIG = {
   walk_smoke: {
@@ -123,7 +124,7 @@ export function ReportForm() {
     }
   };
 
-  const quickDenied = !location && (
+  const locationDenied = !location && (
     permissionState === 'denied' ||
     (!!locationError && locationError.startsWith('位置情報のアクセスが拒否'))
   );
@@ -191,15 +192,6 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {!quickMode && !location && autoFetchEnabled && permissionState === 'denied' && !locationLoading && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                位置情報が拒否されています。ブラウザ設定でこのサイトの位置情報を許可してください。
-              </AlertDescription>
-            </Alert>
-          )}
-
           {locationLoading && (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -207,11 +199,11 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {quickMode && quickDenied && !locationLoading && (
+          {locationDenied && !locationLoading && (
             <Notice tone="error" className="space-y-1">
-              <p className="font-medium">位置情報がオフになっています。許可すると報告できます。</p>
-              <p className="text-xs">iPhone：アドレスバーの「ぁあ」→ Webサイトの設定 → 位置情報 →「許可」</p>
-              <p className="text-xs">Android：アドレスバー左のアイコン → 権限 → 位置情報 → 許可</p>
+              <p className="font-medium">{LOCATION_DENIED_COPY.title}</p>
+              {LOCATION_DENIED_COPY.iphone.map(t => <p key={t} className="text-xs">{t}</p>)}
+              <p className="text-xs">{LOCATION_DENIED_COPY.android}</p>
               <button
                 type="button"
                 onClick={() => getCurrentLocation({ forceFresh: true })}
@@ -222,7 +214,7 @@ export function ReportForm() {
             </Notice>
           )}
 
-          {locationError && !(quickMode && quickDenied) && (
+          {locationError && !(locationDenied) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -239,7 +231,7 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {!locationLoading && !locationError && !(quickMode && quickDenied) && (
+          {!locationLoading && !locationError && !(locationDenied) && (
             <Button
               onClick={() => getCurrentLocation({ forceFresh: true })}
               variant="outline"
@@ -266,7 +258,7 @@ export function ReportForm() {
                   onClick={() => handleSubmit(key as ReportCategory)}
                   className={`${ds.panel} flex w-full items-center gap-3 px-4 py-4 text-left transition-shadow hover:shadow-md disabled:opacity-50`}
                 >
-                  <span className={`${ds.iconChip} ${ds.category[key as ReportCategory].chip} flex-shrink-0`}>
+                  <span className={`${ds.iconChip} ${ds.iconChipTone} flex-shrink-0`}>
                     <Icon className="h-6 w-6" />
                   </span>
                   <span className="min-w-0">
