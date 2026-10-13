@@ -11,6 +11,7 @@ import { apiClient } from '@/lib/apiClient';
 import { ReportCategory } from '@/types';
 import { MiniHeatmap } from '@/components/MiniHeatmap';
 import { trackReportSubmission } from '@/components/GoogleAnalytics';
+import { AddToHomeHint } from '@/components/AddToHomeHint';
 
 const CATEGORY_CONFIG = {
   walk_smoke: {
@@ -44,6 +45,18 @@ export function ReportForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
+  const [quickMode, setQuickMode] = useState(false);
+  const [showHomeHint, setShowHomeHint] = useState(false);
+
+  // Quick entry (/?quick=1): fetch location once on open and submit with a single tap.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('quick') !== '1') return;
+    setQuickMode(true);
+    void getCurrentLocation({ forceFresh: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -71,8 +84,9 @@ export function ReportForm() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!location || !selectedCategory) return;
+  const handleSubmit = async (categoryOverride?: ReportCategory) => {
+    const category = categoryOverride ?? selectedCategory;
+    if (!location || !category) return;
 
     if (isBlocked) {
       setSubmitError(`連続投稿を防ぐため、あと${remainingTime}秒お待ちください`);
@@ -92,12 +106,13 @@ export function ReportForm() {
       await apiClient.submitReport({
         lat: location.lat,
         lon: location.lon,
-        category: selectedCategory,
+        category,
       });
 
-      trackReportSubmission(selectedCategory, { lat: location.lat, lon: location.lon });
+      trackReportSubmission(category, { lat: location.lat, lon: location.lon });
 
       setSubmitSuccess(true);
+      setShowHomeHint(true);
       setSelectedCategory(null);
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (error) {
@@ -117,7 +132,6 @@ export function ReportForm() {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
 
         <div className="space-y-2">
           <div className="bg-blue-50 p-3 rounded-lg">
@@ -217,6 +231,47 @@ export function ReportForm() {
           )}
         </div>
 
+        {quickMode && (
+          <div className="space-y-3">
+            <p className="text-sm font-medium">見かけたものを押すと、すぐ送信します</p>
+            {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
+              const Icon = config.icon;
+              const ready = !!location && !submitting && !isBlocked;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  disabled={!ready}
+                  onClick={() => handleSubmit(key as ReportCategory)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-5 text-left text-white shadow-md disabled:opacity-50 ${config.color}`}
+                >
+                  <Icon className="h-7 w-7 flex-shrink-0" />
+                  <span className="text-xl font-bold">{config.label}</span>
+                </button>
+              );
+            })}
+            {!location && !locationLoading && (
+              <p className="text-xs text-gray-600">現在地がとれると押せるようになります</p>
+            )}
+            {submitting && <p className="text-sm text-gray-600">送信中...</p>}
+            {isBlocked && <p className="text-sm text-orange-600">投稿制限中（あと{remainingTime}秒）</p>}
+            {submitError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="whitespace-pre-line">{submitError}</AlertDescription>
+              </Alert>
+            )}
+            {submitSuccess && (
+              <Alert>
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>報告を送信しました。ご協力ありがとうございます。</AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+
+        {!quickMode && (
+        <>
         <div className="space-y-2">
           <h4 className="text-sm font-medium">報告内容を選択</h4>
 
@@ -259,7 +314,7 @@ export function ReportForm() {
           )}
 
           <Button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             disabled={!location || !selectedCategory || submitting || isBlocked}
             className={`w-full transition-all duration-200 ${
               location && selectedCategory && !submitting && !isBlocked
@@ -285,6 +340,12 @@ export function ReportForm() {
             )}
           </Button>
         </div>
+        </>
+        )}
+
+        {showHomeHint && <AddToHomeHint />}
+
+        <MiniHeatmap userLocation={location ? { lat: location.lat, lon: location.lon } : undefined} />
 
         {submissionCount > 0 && (
           <div className="bg-blue-50 p-3 rounded-lg">
