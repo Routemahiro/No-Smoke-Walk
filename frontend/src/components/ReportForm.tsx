@@ -12,6 +12,7 @@ import { ReportCategory } from '@/types';
 import { MiniHeatmap } from '@/components/MiniHeatmap';
 import { trackReportSubmission } from '@/components/GoogleAnalytics';
 import { AddToHomeHint } from '@/components/AddToHomeHint';
+import { ds, Notice } from '@/components/ds';
 
 const CATEGORY_CONFIG = {
   walk_smoke: {
@@ -122,6 +123,11 @@ export function ReportForm() {
     }
   };
 
+  const quickDenied = !location && (
+    permissionState === 'denied' ||
+    (!!locationError && locationError.startsWith('位置情報のアクセスが拒否'))
+  );
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -185,7 +191,7 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {!location && autoFetchEnabled && permissionState === 'denied' && !locationLoading && (
+          {!quickMode && !location && autoFetchEnabled && permissionState === 'denied' && !locationLoading && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -201,7 +207,22 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {locationError && (
+          {quickMode && quickDenied && !locationLoading && (
+            <Notice tone="error" className="space-y-1">
+              <p className="font-medium">位置情報がオフになっています。許可すると報告できます。</p>
+              <p className="text-xs">iPhone：アドレスバーの「ぁあ」→ Webサイトの設定 → 位置情報 →「許可」</p>
+              <p className="text-xs">Android：アドレスバー左のアイコン → 権限 → 位置情報 → 許可</p>
+              <button
+                type="button"
+                onClick={() => getCurrentLocation({ forceFresh: true })}
+                className={`${ds.secondary} mt-2`}
+              >
+                再試行
+              </button>
+            </Notice>
+          )}
+
+          {locationError && !(quickMode && quickDenied) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
@@ -218,7 +239,7 @@ export function ReportForm() {
             </Alert>
           )}
 
-          {!locationLoading && !locationError && (
+          {!locationLoading && !locationError && !(quickMode && quickDenied) && (
             <Button
               onClick={() => getCurrentLocation({ forceFresh: true })}
               variant="outline"
@@ -233,7 +254,7 @@ export function ReportForm() {
 
         {quickMode && (
           <div className="space-y-3">
-            <p className="text-sm font-medium">見かけたものを押すと、すぐ送信します</p>
+            <p className="text-sm font-medium text-gray-900">見かけたものを押すと、すぐ送信します</p>
             {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
               const Icon = config.icon;
               const ready = !!location && !submitting && !isBlocked;
@@ -243,10 +264,15 @@ export function ReportForm() {
                   type="button"
                   disabled={!ready}
                   onClick={() => handleSubmit(key as ReportCategory)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-5 text-left text-white shadow-md disabled:opacity-50 ${config.color}`}
+                  className={`${ds.panel} flex w-full items-center gap-3 px-4 py-4 text-left transition-shadow hover:shadow-md disabled:opacity-50`}
                 >
-                  <Icon className="h-7 w-7 flex-shrink-0" />
-                  <span className="text-xl font-bold">{config.label}</span>
+                  <span className={`${ds.iconChip} ${ds.category[key as ReportCategory].chip} flex-shrink-0`}>
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-lg font-semibold text-gray-900">{config.label}</span>
+                    <span className="block text-xs text-gray-600">{config.description}</span>
+                  </span>
                 </button>
               );
             })}

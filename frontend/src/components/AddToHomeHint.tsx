@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ds } from '@/components/ds';
 
 const HINT_KEY = 'add-to-home-hint-shown';
 
@@ -27,7 +28,7 @@ export function AddToHomeHint() {
   if (!visible) return null;
 
   return (
-    <div className="relative rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+    <div className={`relative ${ds.notice.info}`}>
       <button
         type="button"
         aria-label="閉じる"
