@@ -2,7 +2,7 @@
   "name": "No-Smoke Alert",
   "short_name": "No-Smoke",
   "description": "大阪市の歩きタバコ・迷惑喫煙の報告を集め、報告が集まっている可能性のあるエリアを地図で可視化するサービスです。",
-  "start_url": "/",
+  "start_url": "/?quick=1&src=pwa",
   "id": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -47,7 +47,37 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["lifestyle", "utilities", "social"],
+  "categories": [
+    "lifestyle",
+    "utilities",
+    "social"
+  ],
   "lang": "ja-JP",
-  "dir": "ltr"
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "迷惑タバコを報告",
+      "short_name": "報告",
+      "url": "/?quick=1&src=shortcut",
+      "icons": [
+        {
+          "src": "/favicon-256x256.png",
+          "sizes": "256x256",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ヒートマップを見る",
+      "short_name": "地図",
+      "url": "/heatmap/",
+      "icons": [
+        {
+          "src": "/favicon-256x256.png",
+          "sizes": "256x256",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
 }

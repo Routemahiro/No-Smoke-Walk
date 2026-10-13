@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 // import { DebugStatus } from '@/components/DebugStatus';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Map } from 'lucide-react';
 
 // Dynamically import ReportForm to avoid SSR issues
@@ -19,6 +20,19 @@ const ReportForm = dynamic(() => import('@/components/ReportForm').then(mod => (
 });
 
 export default function Home() {
+  const [quickMode, setQuickMode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (new URLSearchParams(window.location.search).get('quick') !== '1') return;
+    setQuickMode(true);
+    // Quick entry is a shortcut, not a separate page: keep it out of the index (canonical stays "/").
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, follow';
+    document.head.appendChild(meta);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <header className="bg-white shadow-sm border-b">
@@ -53,6 +67,7 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {!quickMode && (
         <section className="mb-6 rounded-lg border bg-white p-5 shadow-sm">
           <div className="max-w-3xl space-y-3">
             <p className="text-sm font-medium text-blue-700">No-Smoke Alert</p>
@@ -65,6 +80,7 @@ export default function Home() {
             </p>
           </div>
         </section>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Report Form */}
