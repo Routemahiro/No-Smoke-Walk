@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-// TODO(マージ前に必須): くろだくんが作成した Google フォームの URL を入れる。
+// お問い合わせ用 Google フォームの公開URL。
 // 空のままだと「準備中」表示になり、壊れたリンクは出さない。
-const CONTACT_FORM_URL = '';
+const CONTACT_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSc8DxQ99w5Q8eYqCzPvByLs3PPf60hHtqU-bbQUez5yroWH-Q/viewform';
 
 export default function ContactPage() {
   return (
