@@ -75,16 +75,19 @@ export default function HeatmapPage() {
       <footer className="bg-white border-t mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center text-sm text-gray-500 space-y-2">
-            <div className="flex justify-center space-x-6 mb-4">
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
               <Link href="/terms" className="hover:text-gray-700 underline">
                 利用規約
               </Link>
               <Link href="/privacy" className="hover:text-gray-700 underline">
                 プライバシーポリシー
               </Link>
+              <Link href="/contact" className="hover:text-gray-700 underline">
+                お問い合わせ
+              </Link>
             </div>
             <p>© 2025 NO-SMOKE ALERT Osaka</p>
-            <p>地図データ: © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">OpenStreetMap</a> contributors</p>
+            <p>地図データ: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">OpenStreetMap</a> contributors</p>
           </div>
         </div>
       </footer>

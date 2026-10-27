@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         <div className="bg-white rounded-lg shadow-sm border p-8">
           <div className="prose max-w-none">
             <div className="mb-8">
-              <p className="text-gray-600 mb-4">最終更新日：2026-06-04</p>
+              <p className="text-gray-600 mb-4">最終更新日：2026-10-27</p>
               <p className="text-gray-700 leading-relaxed">
                 本プライバシーポリシー（以下「本ポリシー」）は、No-Smoke Alert（以下「本サービス」）を運営する本サービス運営者（以下「当運営」）が、本サービスの提供にあたり取得または利用する情報の取扱い方針を定めるものです。
               </p>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
                 (e) アクセス解析情報：ページURL、ページタイトル、閲覧・操作イベント、報告カテゴリ、地図操作、報告時の概略位置ラベル等。Google Analytics 4を通じて取得される場合があります。
               </p>
               <p>
-                (f) 外部サービスが取得する可能性のある情報：広告配信、地図タイル配信、アクセス解析、ホスティング、データ保存のために、各外部サービスがCookie、IPアドレス、リファラー、ブラウザ情報、リクエスト情報等を取得する場合があります。
+                (f) 外部サービスが取得する可能性のある情報：地図タイル配信、アクセス解析、ホスティング、データ保存のために、各外部サービスがCookie、IPアドレス、リファラー、ブラウザ情報、リクエスト情報等を取得する場合があります。
               </p>
             </div>
 
@@ -111,13 +111,10 @@ export default function PrivacyPage() {
               </p>
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">◆ 6. 広告・外部スクリプト</h2>
+            <h2 className="text-xl font-semibold mb-4">◆ 6. 外部スクリプト・地図表示</h2>
             <div className="mb-6 text-gray-700 space-y-3">
               <p>
-                本サービスでは、Ninja広告関連サービスのスクリプトを読み込み、広告を表示する場合があります。広告配信事業者やその提携先は、Cookie、広告用ID、リクエスト情報、ブラウザ情報等を取得・利用する場合があります。
-              </p>
-              <p>
-                また、地図表示のためにOpenStreetMapのタイルサーバー等へリクエストが送信される場合があります。外部サービスにおける情報の取扱いは、各提供者の規約・プライバシーポリシーに従います。
+                本サービスでは、地図表示のためにOpenStreetMapのタイルサーバー（tile.openstreetmap.org）へリクエストが送信されます。地図の描画にはMapLibre GL JSを利用しています。外部サービスにおける情報の取扱いは、各提供者の規約・プライバシーポリシーに従います。
               </p>
             </div>
 
@@ -143,13 +140,13 @@ export default function PrivacyPage() {
                 不要になった情報、誤報・虚偽報告・識別リスクが高いと判断した情報、削除依頼に合理的な理由がある情報については、可能な範囲で削除、非表示、集計対象外化、または匿名性を高める加工を行います。
               </p>
               <p>
-                Cloudflare、Supabase、Google Analytics、広告配信事業者等の外部サービスに保存されるログや解析情報の保存期間・削除方法は、各サービスの仕様や設定に従います。
+                Cloudflare、Supabase、Google Analytics等の外部サービスに保存されるログや解析情報の保存期間・削除方法は、各サービスの仕様や設定に従います。
               </p>
             </div>
 
             <h2 className="text-xl font-semibold mb-4">◆ 9. 開示・削除等の依頼</h2>
             <p className="mb-6 text-gray-700 leading-relaxed">
-              報告データの確認、削除、利用停止等を希望する場合は、本サイト上で別途表示する連絡先または当運営が案内する問い合わせ導線からご連絡ください。アカウント登録を行わない仕組みのため、対象データの特定には、報告日時、報告カテゴリ、概略位置、削除を希望する理由などの情報が必要になる場合があります。本人確認や対象特定が困難な場合、対応できないことがあります。
+              報告データの確認、削除、利用停止等を希望する場合は、<Link href="/contact" className="text-blue-600 hover:text-blue-800 underline">運営者情報とお問い合わせ</Link>ページに記載の窓口からご連絡ください。アカウント登録を行わない仕組みのため、対象データの特定には、報告日時、報告カテゴリ、概略位置、削除を希望する理由などの情報が必要になる場合があります。本人確認や対象特定が困難な場合、対応できないことがあります。
             </p>
 
             <h2 className="text-xl font-semibold mb-4">◆ 10. 安全管理</h2>
@@ -165,10 +162,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold mb-4">◆ 12. お問い合わせ</h2>
             <div className="mb-6 text-gray-700">
               <p className="mb-2">
-                本ポリシーに関するお問い合わせは、本サイト上で別途表示する連絡先または当運営が案内する問い合わせ導線からご連絡ください。
-              </p>
-              <p className="text-sm text-gray-500">
-                連絡先の正式表示前であっても、未確認の個人名や仮メールアドレスを問い合わせ先として表示しません。
+                本ポリシーに関するお問い合わせは、<Link href="/contact" className="text-blue-600 hover:text-blue-800 underline">運営者情報とお問い合わせ</Link>ページに記載の窓口からご連絡ください。
               </p>
             </div>
 

@@ -23,7 +23,7 @@ export default function TermsPage() {
         <div className="bg-white rounded-lg shadow-sm border p-8">
           <div className="prose max-w-none">
             <div className="mb-8">
-              <p className="text-gray-600 mb-4">最終更新日：2026-06-04</p>
+              <p className="text-gray-600 mb-4">最終更新日：2026-10-27</p>
               <p className="text-gray-700 leading-relaxed">
                 この利用規約（以下「本規約」）は、No-Smoke Alert（以下「本サービス」）を運営する本サービス運営者（以下「当運営」）が提供するウェブサイト https://no-smoke-alert.com/（以下「本サイト」）の利用条件を定めるものです。本サイトを利用した方（以下「ユーザー」）は、本規約に同意したものとみなします。
               </p>
@@ -91,7 +91,7 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold mb-4">◆ 7. 外部サービス</h2>
             <p className="mb-6 text-gray-700 leading-relaxed">
-              本サービスでは、配信基盤、データ保存、アクセス解析、広告配信、地図表示等のために、Cloudflare、Supabase、Google Analytics、Ninja広告関連サービス、OpenStreetMapタイルサーバー等の外部サービスを利用する場合があります。これらの外部サービスの利用条件および情報の取扱いは、各提供者の規約・プライバシーポリシーにも従います。
+              本サービスでは、配信基盤、データ保存、アクセス解析、地図表示等のために、Cloudflare、Supabase、Google Analytics、OpenStreetMapタイルサーバー等の外部サービスを利用する場合があります。これらの外部サービスの利用条件および情報の取扱いは、各提供者の規約・プライバシーポリシーにも従います。
             </p>
 
             <h2 className="text-xl font-semibold mb-4">◆ 8. 知的財産</h2>
@@ -127,10 +127,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold mb-4">◆ 13. お問い合わせ</h2>
             <div className="mb-6 text-gray-700">
               <p className="mb-2">
-                本規約または本サービスに関するお問い合わせは、本サイト上で別途表示する連絡先または当運営が案内する問い合わせ導線からご連絡ください。
-              </p>
-              <p className="text-sm text-gray-500">
-                連絡先の正式表示前であっても、当運営者名や未確認のメールアドレスを装った問い合わせ先は使用しません。
+                本規約または本サービスに関するお問い合わせは、<Link href="/contact" className="text-blue-600 hover:text-blue-800 underline">運営者情報とお問い合わせ</Link>ページに記載の窓口からご連絡ください。
               </p>
             </div>
 
