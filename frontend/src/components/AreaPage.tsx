@@ -41,8 +41,18 @@ export function AreaPage({ area }: { area: AreaConfig }) {
         <Panel className="space-y-3">
           <h2 className={ds.h2}>{area.name}の喫煙所</h2>
           <p className={ds.body}>
-            大阪市の掲載情報をもとに数えると、{area.name}の中心から半径1km以内に「大阪市指定喫煙所」が約{area.spotCount}か所あります。たとえば{area.spotExamples.join('、')}などです。
+            大阪市の掲載情報をもとに数えると、{area.name}の中心から半径1km以内に「大阪市指定喫煙所」が約{area.spotCount}か所あります。{area.spots ? '' : `たとえば${area.spotExamples.join('、')}などです。`}
           </p>
+          {area.spots && area.spotsLead ? <p className={ds.body}>{area.spotsLead}</p> : null}
+          {area.spots ? (
+            <ul className={`list-disc space-y-1 pl-5 ${ds.body}`}>
+              {area.spots.map(spot => (
+                <li key={spot.name}>
+                  <span className="font-semibold text-gray-900">{spot.name}</span>：{spot.location}
+                </li>
+              ))}
+            </ul>
+          ) : null}
           <p className={ds.body}>
             場所・利用時間は変わることがあります。最新の一覧と地図は大阪市のページで確認してください。
           </p>
@@ -50,8 +60,11 @@ export function AreaPage({ area }: { area: AreaConfig }) {
             大阪市の喫煙所一覧を見る
           </a>
           <p className={ds.small}>
-            出典：大阪市「<a className="underline" href={OSAKA_SPOTS_URL} target="_blank" rel="noopener noreferrer">大阪市内の喫煙可能な場所について</a>」（{SPOTS_CHECKED}）。件数は同ページの地図座標から当サイトが数えたものです。
+            出典：大阪市「<a className="underline" href={OSAKA_SPOTS_URL} target="_blank" rel="noopener noreferrer">大阪市内の喫煙可能な場所について</a>」（{area.spotsChecked ?? SPOTS_CHECKED}）。件数は同ページの地図座標から当サイトが数えたものです。
           </p>
+          {area.spots ? (
+            <p className={ds.small}>このサイトは大阪市の公式サイトではありません。最新の情報は出典をご確認ください。</p>
+          ) : null}
         </Panel>
 
         {area.extra && (

@@ -2,8 +2,14 @@
 // - https://www.city.osaka.lg.jp/kankyo/page/0000630108.html (市内全域 路上喫煙禁止, 令和7年1月27日〜, 過料1,000円)
 // - https://www.city.osaka.lg.jp/kankyo/page/0000607135.html (大阪市内の喫煙可能な場所, 2026年10月6日更新)
 // Smoking-spot counts = 大阪市指定喫煙所 on that page whose map coordinates are within 1km of `center` (counted 2026-10-13).
+// Umeda `spots` were checked 2026-10-26 against that page's 2026-10-16 update (北区). Counts were not re-tallied.
 
 export type AreaSlug = 'namba-shinsaibashi' | 'umeda' | 'shin-osaka';
+
+export interface AreaSpot {
+  name: string;
+  location: string;
+}
 
 export interface AreaConfig {
   slug: AreaSlug;
@@ -16,6 +22,11 @@ export interface AreaConfig {
   intro: string;
   spotCount: number;
   spotExamples: string[];
+  /** Named spots inside the existing smoking section. When set, spotExamples are not repeated. */
+  spots?: AreaSpot[];
+  spotsLead?: string;
+  /** Replaces SPOTS_CHECKED in this area's smoking-section source line. */
+  spotsChecked?: string;
   cityListUrl: string;
   extra?: { heading: string; body: string[] };
 }
@@ -45,7 +56,7 @@ export const AREAS: AreaConfig[] = [
     name: '梅田',
     title: '梅田の喫煙所と歩きタバコ報告｜大阪市の路上喫煙ルール',
     description:
-      '梅田・大阪駅周辺の大阪市指定喫煙所の数と探し方、市内全域の路上喫煙禁止（過料1,000円）のルール、歩きタバコ・立ち止まり喫煙の報告マップをまとめています。',
+      '梅田・大阪駅周辺の大阪市指定喫煙所の数と探し方、主な喫煙所の場所、市内全域の路上喫煙禁止（過料1,000円）のルール、歩きタバコ・立ち止まり喫煙の報告マップをまとめています。',
     h1: '梅田の喫煙所と歩きタバコ報告',
     center: { lat: 34.7025, lon: 135.4959 },
     radiusM: 1000,
@@ -53,6 +64,17 @@ export const AREAS: AreaConfig[] = [
       '梅田は大阪駅・梅田駅を中心に、通勤や乗り換えで多くの人が行き来するエリアです。このページでは、近くの喫煙所の探し方と、このあたりで寄せられた歩きタバコ・立ち止まり喫煙の報告をまとめています。',
     spotCount: 28,
     spotExamples: ['小松原町喫煙所', 'うめきた公園喫煙所', '西梅田公園喫煙所'],
+    spotsLead:
+      '吸うときは、歩きながらではなく指定喫煙所で。梅田駅・大阪駅のまわりでは、たとえば次の場所があります。',
+    // 堂山町喫煙所の所在地は市ページ表記の「北区小松原町」のまま。西梅田公園喫煙所は市ページでも空白なし。
+    spots: [
+      { name: '小松原町喫煙所', location: '北区小松原町（屋外・終日）' },
+      { name: '堂山町喫煙所', location: '北区小松原町（屋外・終日）' },
+      { name: '西梅田公園喫煙所', location: '北区梅田2丁目6番（屋外・終日）' },
+      { name: 'うめきた公園喫煙所', location: '北区大深町・うめきた公園内（6時〜24時30分）' },
+      { name: 'THE TOBACCO UMEDA', location: '北区梅田1丁目3番1号・大阪駅前第1ビル1階（平日9時〜21時）' },
+    ],
+    spotsChecked: '大阪市ページ 2026年10月16日更新分、2026年10月26日確認',
     cityListUrl: `${'https://www.city.osaka.lg.jp/kankyo/page/0000607135.html'}#kitaku`,
   },
   {
