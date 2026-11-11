@@ -57,7 +57,7 @@ export async function handleHeatmapRequest(request: Request, env: Env): Promise<
     const gridMetersRaw = searchParams.get('grid_m'); // meters (optional)
 
     const days = daysRaw ? parseInt(daysRaw, 10) : 30; // default 30 days
-    const minReports = minReportsRaw ? parseInt(minReportsRaw, 10) : 3; // default 3 reports to show hotspot
+    const minReports = minReportsRaw ? parseInt(minReportsRaw, 10) : 1; // default 1 report
     
     // Validate parameters
     if (!Number.isFinite(days) || Number.isNaN(days) || days < 1 || days > 365) {
