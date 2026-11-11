@@ -46,8 +46,14 @@ export default {
       });
     }
 
-    // Debug endpoint to check environment variables
+    // Debug endpoint to check environment variables (local/dev only; hidden in production)
     if (url.pathname === '/api/debug/env') {
+      if (env.ENVIRONMENT !== 'development') {
+        return new Response('Not Found', {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
       return new Response(JSON.stringify({ 
         hasSupabaseUrl: !!env.SUPABASE_URL,
         hasSupabaseKey: !!env.SUPABASE_ANON_KEY,
