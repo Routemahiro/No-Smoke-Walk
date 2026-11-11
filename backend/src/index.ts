@@ -37,29 +37,7 @@ export default {
       return new Response(JSON.stringify({ 
         status: 'ok', 
         timestamp: new Date().toISOString(),
-        environment: env.ENVIRONMENT || 'development'
-      }), {
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders 
-        },
-      });
-    }
-
-    // Debug endpoint to check environment variables (local/dev only; hidden in production)
-    if (url.pathname === '/api/debug/env') {
-      if (env.ENVIRONMENT !== 'development') {
-        return new Response('Not Found', {
-          status: 404,
-          headers: corsHeaders,
-        });
-      }
-      return new Response(JSON.stringify({ 
-        hasSupabaseUrl: !!env.SUPABASE_URL,
-        hasSupabaseKey: !!env.SUPABASE_ANON_KEY,
-        supabaseUrlPrefix: env.SUPABASE_URL ? env.SUPABASE_URL.substring(0, 20) + '...' : 'undefined',
-        environment: env.ENVIRONMENT || 'undefined',
-        abuseGuard: env.ABUSE_GUARD || 'undefined'
+        environment: env.ENVIRONMENT || 'production'
       }), {
         headers: { 
           'Content-Type': 'application/json',
