@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Map } from 'lucide-react';
+import { DailyCountChart } from '@/components/DailyCountChart';
 
 // Dynamically import ReportForm to avoid SSR issues
 const ReportForm = dynamic(() => import('@/components/ReportForm').then(mod => ({ default: mod.ReportForm })), {
@@ -86,7 +87,8 @@ export default function Home() {
           {/* Report Form */}
           <div className="min-w-0 space-y-4">
             <ReportForm />
-            
+            <DailyCountChart />
+
             {/* Navigation Links */}
             <div className="space-y-4">
               <div className="rounded-lg border bg-white p-4">
