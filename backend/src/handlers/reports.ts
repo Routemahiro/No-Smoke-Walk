@@ -1,7 +1,15 @@
 import { getLocationName, createIpHash, createFingerprintHash, createSupabaseHeaders } from '../utils/supabase';
 import { ReportSubmissionRequest, ApiResponse, Env } from '../types';
+import { countReportsOnJstDay } from './stats';
 
-export async function handleReportSubmission(request: Request, env: Env): Promise<Response> {
+export interface ReportHandlerDeps {
+  fetch?: typeof fetch;
+  now?: () => Date;
+}
+
+export async function handleReportSubmission(request: Request, env: Env, deps: ReportHandlerDeps = {}): Promise<Response> {
+  const fetchImpl = deps.fetch ?? fetch;
+  const now = () => (deps.now ? deps.now() : new Date());
   try {
     // Parse request body
     const body: ReportSubmissionRequest = await request.json();
@@ -75,7 +83,7 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
     // a development fallback so the API returns Supabase's explicit error when
     // a local environment has not configured the service role yet.
     const writeKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
-    const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/reports`, {
+    const supabaseResponse = await fetchImpl(`${env.SUPABASE_URL}/rest/v1/reports`, {
       method: 'POST',
       headers: createSupabaseHeaders(writeKey, {
         'Content-Type': 'application/json',
@@ -113,12 +121,24 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
       await updateAbuseGuard(env, ipHash, fingerprintHash);
     }
 
-    // Return success response
+    // Count after the insert commits. The public GET is cached for a few minutes,
+    // so the thank-you uses this uncached count and therefore includes this report.
+    // A zero result means the read could not see reports; omit the field so the
+    // client keeps the one-line thank-you instead of announcing a false total.
+    let todayCount: number | undefined;
+    try {
+      const counted = await countReportsOnJstDay(env, now(), fetchImpl);
+      if (counted >= 1) todayCount = counted;
+    } catch (countError) {
+      console.error('Today count after report failed:', countError);
+    }
+
     const response: ApiResponse = {
       success: true,
       data: {
         message: 'Report submitted successfully',
-        timestamp: new Date().toISOString()
+        timestamp: now().toISOString(),
+        ...(todayCount !== undefined ? { today_count: todayCount } : {}),
       }
     };
 
@@ -126,6 +146,7 @@ export async function handleReportSubmission(request: Request, env: Env): Promis
       status: 201,
       headers: { 
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type'

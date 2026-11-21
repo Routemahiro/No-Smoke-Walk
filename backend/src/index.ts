@@ -1,5 +1,6 @@
 import { handleReportSubmission } from './handlers/reports';
 import { handleHeatmapRequest, handleHeatmapStats } from './handlers/heatmap';
+import { handleDailyStats } from './handlers/stats';
 import { handleExportCSV, handleExportExcel } from './handlers/export';
 import { Env } from './types';
 
@@ -78,6 +79,12 @@ export default {
 
     if (url.pathname === '/api/heatmap/stats' && request.method === 'GET') {
       return withCors(await handleHeatmapStats(request, env));
+    }
+
+    // City-wide calendar-day counts. Placed away from /api/health and /api/debug/env
+    // so this route does not overlap PR #16's edits to those two blocks.
+    if (url.pathname === '/api/stats/daily' && request.method === 'GET') {
+      return withCors(await handleDailyStats(request, env));
     }
 
     if (url.pathname === '/api/export/csv' && request.method === 'GET') {

@@ -30,7 +30,23 @@ const CATEGORY_CONFIG = {
   },
 } as const;
 
-export function ReportForm() {
+const THANK_YOU_BASE = '報告を送信しました。ご協力ありがとうございます。';
+
+export function thankYouMessage(todayCount: number | null | undefined): string {
+  if (typeof todayCount !== 'number' || !Number.isInteger(todayCount) || todayCount < 1) {
+    return THANK_YOU_BASE;
+  }
+  if (todayCount === 1) {
+    return `${THANK_YOU_BASE}きょう届いた報告として、回数に含めています。`;
+  }
+  return `${THANK_YOU_BASE}きょうは、みなさまから${todayCount}件の報告が届いています。`;
+}
+
+export type ReportSubmittedInfo = {
+  todayCount: number | null;
+};
+
+export function ReportForm({ onSubmitted }: { onSubmitted?: (info: ReportSubmittedInfo) => void }) {
   const {
     location,
     error: locationError,
@@ -46,6 +62,7 @@ export function ReportForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [todayCount, setTodayCount] = useState<number | null>(null);
   const [autoFetchEnabled, setAutoFetchEnabled] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [showHomeHint, setShowHomeHint] = useState(false);
@@ -105,18 +122,21 @@ export function ReportForm() {
         return;
       }
 
-      await apiClient.submitReport({
+      const result = await apiClient.submitReport({
         lat: location.lat,
         lon: location.lon,
         category,
       });
+      const nextCount = typeof result?.data?.today_count === 'number' ? result.data.today_count : null;
 
       trackReportSubmission(category, { lat: location.lat, lon: location.lon });
 
+      setTodayCount(nextCount);
       setSubmitSuccess(true);
       setShowHomeHint(true);
       setSelectedCategory(null);
-      setTimeout(() => setSubmitSuccess(false), 3000);
+      onSubmitted?.({ todayCount: nextCount });
+      setTimeout(() => setSubmitSuccess(false), 15000);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : '報告の送信に失敗しました');
     } finally {
@@ -282,7 +302,7 @@ export function ReportForm() {
             {submitSuccess && (
               <Alert>
                 <CheckCircle className="h-4 w-4" />
-                <AlertDescription>報告を送信しました。ご協力ありがとうございます。</AlertDescription>
+                <AlertDescription>{thankYouMessage(todayCount)}</AlertDescription>
               </Alert>
             )}
           </div>
@@ -327,7 +347,7 @@ export function ReportForm() {
           {submitSuccess && (
             <Alert>
               <CheckCircle className="h-4 w-4" />
-              <AlertDescription>報告を送信しました。ご協力ありがとうございます。</AlertDescription>
+              <AlertDescription>{thankYouMessage(todayCount)}</AlertDescription>
             </Alert>
           )}
 
