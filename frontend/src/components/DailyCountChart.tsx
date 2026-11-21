@@ -72,7 +72,7 @@ export function DailyCountChart({ refreshKey = 0, todayFloor = null }: DailyCoun
         {shown.map((day, index) => {
           const isToday = index === shown.length - 1;
           const isZero = day.count === 0;
-          const height = isZero ? 4 : Math.max(8, Math.round((day.count / Math.max(max, 1)) * 72));
+          const height = isZero ? 6 : Math.max(8, Math.round((day.count / Math.max(max, 1)) * 72));
           return (
             <div key={day.date} className="flex min-w-0 flex-1 flex-col items-center">
               <div className="flex h-4 items-end justify-center">
