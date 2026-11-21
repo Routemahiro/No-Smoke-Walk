@@ -41,19 +41,19 @@ describe('DailyCountChart', () => {
     mockStats(week);
     render(<DailyCountChart />);
 
-    expect(await screen.findByRole('heading', { name: 'ここ数日の報告' })).toBeInTheDocument();
-    expect(screen.getByText('みなさまから届いた報告の回数です。日本時間の1日ごと。参考の数字で、実際の発生件数を表すものではありません。')).toBeInTheDocument();
-    expect(screen.getByText('11/15')).toBeInTheDocument();
-    expect(screen.getByText('2件')).toBeInTheDocument();
-    expect(screen.getByText('きょう')).toBeInTheDocument();
+    expect((await screen.findByRole('heading', { name: 'ここ数日の報告' })).textContent).toBe('ここ数日の報告');
+    expect(screen.getByText('みなさまから届いた報告の回数です。日本時間の1日ごと。参考の数字で、実際の発生件数を表すものではありません。').textContent).toContain('日本時間の1日ごと');
+    expect(screen.getByText('11/15').textContent).toBe('11/15');
+    expect(screen.getByText('2件').textContent).toBe('2件');
+    expect(screen.getByText('きょう').textContent).toBe('きょう');
     expect(screen.getAllByText('報告なし')).toHaveLength(3);
-    expect(screen.getByText('この7日で、7件届いています。')).toBeInTheDocument();
+    expect(screen.getByText('この7日で、7件届いています。').textContent).toContain('7件');
 
     const todayBar = document.querySelector('[data-today="true"]') as HTMLElement;
     const zeroBar = document.querySelector('[data-zero="true"]') as HTMLElement;
-    expect(todayBar).toHaveStyle({ backgroundColor: '#2563eb' });
-    expect(zeroBar).toHaveStyle({ backgroundColor: '#d1d5db' });
-    expect(screen.queryByText('0件')).not.toBeInTheDocument();
+    expect(todayBar.style.backgroundColor.replace(/\s/g, '')).toMatch(/#2563eb|rgb\(37,99,235\)/);
+    expect(zeroBar.style.backgroundColor.replace(/\s/g, '')).toMatch(/#d1d5db|rgb\(209,213,219\)/);
+    expect(screen.queryByText('0件')).toBeNull();
   });
 
   it('hides the card when the API fails', async () => {
@@ -64,15 +64,15 @@ describe('DailyCountChart', () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled();
     });
-    expect(screen.queryByRole('heading', { name: 'ここ数日の報告' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'ここ数日の報告' })).toBeNull();
   });
 
   it('raises today when the post-submit count is ahead of a stale response', async () => {
     mockStats({ ...week, days: week.days.map((day) => ({ ...day })), today: 3, total: 7 });
     render(<DailyCountChart refreshKey={1} todayFloor={4} />);
 
-    expect(await screen.findByText('この7日で、8件届いています。')).toBeInTheDocument();
-    expect(screen.getByText('4件')).toBeInTheDocument();
+    expect((await screen.findByText('この7日で、8件届いています。')).textContent).toContain('8件');
+    expect(screen.getByText('4件').textContent).toBe('4件');
   });
 
   it('uses the empty-week sentence when every bar is zero', async () => {
@@ -85,6 +85,6 @@ describe('DailyCountChart', () => {
     });
     render(<DailyCountChart />);
 
-    expect(await screen.findByText('この7日は、まだ報告が届いていません。見かけたら、ぜひ教えてください。')).toBeInTheDocument();
+    expect((await screen.findByText('この7日は、まだ報告が届いていません。見かけたら、ぜひ教えてください。')).textContent).toContain('まだ報告が届いていません');
   });
 });
