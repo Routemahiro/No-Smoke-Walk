@@ -22,6 +22,8 @@ const ReportForm = dynamic(() => import('@/components/ReportForm').then(mod => (
 
 export default function Home() {
   const [quickMode, setQuickMode] = useState(false);
+  const [statsRefresh, setStatsRefresh] = useState(0);
+  const [todayFloor, setTodayFloor] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -86,8 +88,15 @@ export default function Home() {
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Report Form */}
           <div className="min-w-0 space-y-4">
-            <ReportForm />
-            <DailyCountChart />
+            <ReportForm
+              onSubmitted={({ todayCount }) => {
+                if (typeof todayCount === 'number' && todayCount >= 1) {
+                  setTodayFloor(todayCount);
+                }
+                setStatsRefresh((value) => value + 1);
+              }}
+            />
+            <DailyCountChart refreshKey={statsRefresh} todayFloor={todayFloor} />
 
             {/* Navigation Links */}
             <div className="space-y-4">
