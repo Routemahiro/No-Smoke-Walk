@@ -1,6 +1,23 @@
+import type { DailyStats, ReportSubmitResult } from '@/types';
+
 type ApiErrorBody = {
   error?: unknown;
 };
+
+function isDailyStats(value: unknown): value is DailyStats {
+  if (!value || typeof value !== 'object') return false;
+  const body = value as Partial<DailyStats>;
+  if (body.timezone !== 'Asia/Tokyo' || !Array.isArray(body.days)) return false;
+  if (typeof body.today !== 'number' || typeof body.total !== 'number' || typeof body.total_365d !== 'number') {
+    return false;
+  }
+  return body.days.every((day) => (
+    !!day
+    && typeof day.date === 'string'
+    && /^\d{4}-\d{2}-\d{2}$/.test(day.date)
+    && typeof day.count === 'number'
+  ));
+}
 
 export const REPORT_SERVICE_UNAVAILABLE_MESSAGE = [
   '報告にご協力いただき、ありがとうございます。',
@@ -25,7 +42,7 @@ export const apiClient = {
     lat: number;
     lon: number;
     category: 'walk_smoke' | 'stand_smoke';
-  }) {
+  }): Promise<ReportSubmitResult> {
     let response: Response;
 
     try {
@@ -59,7 +76,26 @@ export const apiClient = {
       throw new Error(apiError || '報告の送信に失敗しました。入力内容を確認して再度お試しください。');
     }
 
-    return response.json();
+    return response.json() as Promise<ReportSubmitResult>;
+  },
+
+  async getDailyStats(days = 7, options?: { fresh?: boolean }): Promise<DailyStats> {
+    const params = new URLSearchParams({ days: String(days) });
+    if (options?.fresh) params.set('_', String(Date.now()));
+
+    const response = await fetch(`${this.baseUrl}/api/stats/daily?${params}`, {
+      cache: options?.fresh ? 'no-store' : 'default',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch daily stats');
+    }
+
+    const body: unknown = await response.json();
+    if (!isDailyStats(body)) {
+      throw new Error('Unexpected daily stats response');
+    }
+    return body;
   },
 
   async getHeatmapData(params?: {

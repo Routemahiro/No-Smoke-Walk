@@ -48,6 +48,30 @@ export interface ApiResponse<T = unknown> {
   message?: string;
 }
 
+// 市区全体の日次報告回数（Asia/Tokyo の暦日。位置や時刻は含まない）
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface DailyStats {
+  timezone: 'Asia/Tokyo';
+  days: DailyCount[];
+  today: number;
+  total: number;
+  total_365d: number;
+}
+
+export interface ReportSubmitResult {
+  success: boolean;
+  data?: {
+    message?: string;
+    timestamp?: string;
+    today_count?: number;
+  };
+  error?: string;
+}
+
 // 位置情報
 export interface Location {
   lat: number;
